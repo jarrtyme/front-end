@@ -84,11 +84,11 @@
     "useRouter": true,
     "useSlots": true,
     "useTemplateRef": true,
+    "useUserStore": true,
     "watch": true,
     "watchEffect": true,
     "watchPostEffect": true,
     "watchSyncEffect": true,
-    "ElMessage": true,
-    "useUserStore": true
+    "ElMessage": true
   }
 }

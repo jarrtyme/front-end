@@ -47,8 +47,8 @@ export default defineConfig({
     https: false, // 开发服务器使用 HTTP，如果需要 HTTPS 可以设置为 true
     proxy: {
       '/api': {
-        target: 'http://www.wdmlzffonline.top/api',
-        // target: 'http://localhost:3000',
+        // 使用环境变量配置代理目标，开发环境代理到本地后端
+        target: process.env.VITE_API_BASE_URL || 'http://localhost:3000',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api/, ''),
         secure: false, // 允许 HTTPS 请求代理到 HTTP 服务器（开发环境）
