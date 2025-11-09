@@ -117,8 +117,31 @@ import Home from '@/views/Home.vue'
 - **其他静态文件** - 如 `logo.png`，通过 `/logo.png` 访问
 
 **与 `src/assets` 的区别**：
+
 - `public/` - 文件不会被 Vite 处理，直接复制到输出目录，适合 favicon、robots.txt 等
 - `src/assets/` - 文件会被 Vite 处理（压缩、优化等），适合图片、字体等资源
+
+### API 配置
+
+项目使用环境变量来配置 API 基础路径，支持不同环境的配置：
+
+- **`.env`** - 默认配置（所有环境都会加载）
+- **`.env.development`** - 开发环境配置
+- **`.env.production`** - 生产环境配置
+
+#### 当前配置
+
+- **开发环境** (`VITE_API_PREFIX=/api`) - 使用相对路径，通过 Vite 代理到本地后端
+- **生产环境** (`VITE_API_PREFIX=https://www.wdmlzffonline.top/api`) - 直接访问生产环境的后台服务
+
+#### 修改配置
+
+如果需要修改 API 地址，编辑对应的 `.env` 文件：
+
+```bash
+# 修改生产环境 API 地址
+VITE_API_PREFIX=https://www.wdmlzffonline.top/api
+```
 
 ### 前端代理
 
