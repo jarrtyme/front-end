@@ -7,6 +7,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: './', // 生产环境使用相对路径，便于部署
   plugins: [
     vue(),
     AutoImport({
@@ -55,6 +56,26 @@ export default defineConfig({
         secure: false, // 允许 HTTPS 请求代理到 HTTP 服务器（开发环境）
         ws: true // 支持 WebSocket
       }
+    }
+  },
+  build: {
+    outDir: 'dist', // 构建输出目录
+    assetsDir: 'assets', // 静态资源目录
+    sourcemap: false, // 生产环境不生成 sourcemap，减小体积
+    minify: 'esbuild', // 使用 esbuild 压缩（Vite 默认，速度快）
+    chunkSizeWarningLimit: 1000, // chunk 大小警告阈值（KB）
+    rollupOptions: {
+      output: {
+        // 手动分包，优化加载性能
+        manualChunks: {
+          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          'element-plus': ['element-plus', '@element-plus/icons-vue']
+        }
+      }
+    },
+    // 生产环境移除 console 和 debugger
+    esbuild: {
+      drop: ['console', 'debugger']
     }
   }
 })

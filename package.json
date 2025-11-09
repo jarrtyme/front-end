@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:prod": "vite build --mode production",
+    "build:preview": "vite build --mode production && vite preview",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{js,vue,scss,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{js,vue,scss,css,json}\""

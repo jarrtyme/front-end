@@ -36,10 +36,9 @@
       >
         <el-table-column label="预览" width="120" align="center">
           <template #default="{ row }">
-            {{ getImageUrl(row.path) }}
             <el-image
-              :src="getImageUrl(row.path)"
-              :preview-src-list="[getImageUrl(row.path)]"
+              :src="getImageUrl(row.url || row.path)"
+              :preview-src-list="[getImageUrl(row.url || row.path)]"
               fit="cover"
               style="width: 80px; height: 80px; border-radius: 4px"
               :lazy="true"
@@ -134,18 +133,18 @@ const filteredImageList = computed(() => {
 })
 
 // 获取图片完整 URL
-const getImageUrl = path => {
-  if (!path) return ''
-  // 如果路径已经是完整 URL，直接返回
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path
+// 后端已经返回完整的 url 字段，直接使用即可
+const getImageUrl = url => {
+  if (!url) return ''
+  // 如果已经是完整 URL，直接返回
+  if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+    return url
   }
-
-  // 根据 Vite 配置，代理 target 是 'http://www.wdmlzffonline.top/api'
-  // 图片路径 /uploads/xxx.jpg 不在 /api 下，需要通过后端服务器直接访问
-  // 后端服务器地址应该是 'http://www.wdmlzffonline.top'（移除 /api）
-
-  return `${import.meta.env.VITE_API_PIC}${path}`
+  // 如果是对象（兼容旧代码），尝试获取 url 或 path
+  if (typeof url === 'object') {
+    return url.url || url.path || ''
+  }
+  return url
 }
 
 // 格式化文件大小

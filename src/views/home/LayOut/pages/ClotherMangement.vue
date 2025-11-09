@@ -556,16 +556,18 @@ const getImageUrl = path => {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path
   }
-  // 相对路径，需要拼接服务器地址
-  // 如果是 /uploads/ 开头的路径，使用后端服务器地址
+  // 相对路径，自动使用当前页面的协议（HTTP/HTTPS）
+  // 这样在 HTTPS 页面中会自动使用 HTTPS，避免混合内容问题
+  const protocol = window.location.protocol // 自动获取当前页面协议
+  const host = window.location.host // 自动获取当前域名
+
+  // 如果是 /uploads/ 开头的路径，直接使用当前域名
   if (path.startsWith('/uploads/')) {
-    const baseUrl =
-      import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000'
-    return `${baseUrl}${path}`
+    return `${protocol}//${host}${path}`
   }
+
   // 其他相对路径
-  const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000'
-  return `${baseUrl}${path.startsWith('/') ? path : '/' + path}`
+  return `${protocol}//${host}${path.startsWith('/') ? path : '/' + path}`
 }
 
 // 格式化数字（保留两位小数）

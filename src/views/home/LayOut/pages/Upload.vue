@@ -138,7 +138,7 @@ const loadFileList = async () => {
       fileList.value = files.map(file => ({
         name: file.filename || file.originalName,
         size: file.size || 0,
-        url: file.path || file.url,
+        url: file.url || file.path, // 优先使用后端返回的完整 URL
         uploadTime: file.uploadTime || file.createdAt || file.lastModified,
         fileType: file.fileType || getFileTypeFromName(file.filename || file.originalName),
         mimetype: file.mimetype
@@ -297,21 +297,18 @@ const formatFileSize = size => {
 }
 
 // 获取图片完整 URL
-const getImageUrl = path => {
-  if (!path) return ''
-  // 如果路径已经是完整 URL，直接返回
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path
+// 后端已经返回完整的 url 字段，直接使用即可
+const getImageUrl = url => {
+  if (!url) return ''
+  // 如果已经是完整 URL，直接返回
+  if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+    return url
   }
-  // 相对路径，需要拼接服务器地址
-  if (path.startsWith('/uploads/')) {
-    const baseUrl =
-      import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000'
-    return `${baseUrl}${path}`
+  // 如果是对象（兼容旧代码），尝试获取 url 或 path
+  if (typeof url === 'object') {
+    return url.url || url.path || ''
   }
-  // 其他相对路径
-  const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000'
-  return `${baseUrl}${path.startsWith('/') ? path : '/' + path}`
+  return url
 }
 
 // 判断是否为图片
