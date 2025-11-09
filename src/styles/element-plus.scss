@@ -32,12 +32,12 @@
   --el-footer-height: 60px;
   --el-footer-bg-color: var(--el-bg-color);
 }
-.el-menu{
+.el-menu {
   background-color: transparent;
   backdrop-filter: blur(20px);
 }
-.el-menu--horizontal.el-menu{
-  border-bottom:initial
+.el-menu--horizontal.el-menu {
+  border-bottom: initial;
 }
 
 // ==================== 暗色主题（可选） ====================

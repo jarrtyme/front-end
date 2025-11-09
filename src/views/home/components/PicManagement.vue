@@ -34,7 +34,6 @@
         style="width: 100%"
         :empty-text="loading ? '加载中...' : '暂无图片'"
       >
-
         <el-table-column label="预览" width="120" align="center">
           <template #default="{ row }">
             {{ getImageUrl(row.path) }}
@@ -129,8 +128,8 @@ const filteredImageList = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
   const end = start + pageSize.value
 
-  console.log(filtered.slice(start, end));
-  
+  console.log(filtered.slice(start, end))
+
   return filtered.slice(start, end)
 })
 

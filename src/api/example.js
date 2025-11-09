@@ -35,4 +35,3 @@ export function updateUser(id, data) {
 export function deleteUser(id) {
   return del(`/users/${id}`)
 }
-

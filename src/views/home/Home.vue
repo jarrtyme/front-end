@@ -1,18 +1,20 @@
 <template>
-    <Header />
+  <Header />
 
-    <el-main>
-      <div class="header-bg" style="height: 60px"></div>
-      <div class="home">
-        <Carousel />
-        <WelcomeCard :app-info="appStore.appInfo" @click="handleClick" />
-        <DescriptionsList :list="descriptionsList" />
-        <PicManagement />
-        <ClotherMangement />
-      </div>
-    </el-main>
+  <el-main>
+    <div class="header-bg" style="height: 60px"></div>
+    <div class="home">
+      <Carousel />
+      <WelcomeCard :app-info="appStore.appInfo" @click="handleClick" />
+      <DescriptionsList :list="descriptionsList" />
+      <PicManagement />
+      <ClotherMangement />
+    </div>
 
-    <Footer />
+    <LayOut />
+  </el-main>
+
+  <Footer />
 </template>
 
 <script setup name="Home">
@@ -24,6 +26,8 @@ import DescriptionsList from './components/DescriptionsList.vue'
 
 import PicManagement from './components/PicManagement.vue'
 import ClotherMangement from './components/ClotherMangement.vue'
+
+import LayOut from './LayOut/layout.vue'
 
 // Pinia store 已自动导入，无需手动 import
 const appStore = useAppStore()

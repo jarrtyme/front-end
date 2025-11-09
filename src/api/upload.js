@@ -40,7 +40,7 @@ export function uploadImages(files) {
   }
 
   // 获取 token
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token')
 
   // 构建请求 URL
   const baseUrl = import.meta.env.VITE_API_PREFIX || '/api'
@@ -53,6 +53,84 @@ export function uploadImages(files) {
     headers: {
       Authorization: token ? `Bearer ${token}` : ''
       // 不要设置 Content-Type，让浏览器自动设置，以便正确设置 boundary
+    },
+    body: formData
+  }).then(async response => {
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data.message || '上传失败')
+    }
+    return data
+  })
+}
+
+/**
+ * 上传单个文件（通用，支持所有文件类型）
+ * @param {File} file - 要上传的文件
+ * @returns {Promise}
+ */
+export function uploadFile(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  // 获取 token
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+
+  // 构建请求 URL
+  const baseUrl = import.meta.env.VITE_API_PREFIX || '/api'
+  const url = baseUrl.startsWith('http')
+    ? `${baseUrl}/upload/file`
+    : `${window.location.protocol}//${window.location.host}${baseUrl}/upload/file`
+
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: token ? `Bearer ${token}` : ''
+    },
+    body: formData
+  }).then(async response => {
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data.message || '上传失败')
+    }
+    return data
+  })
+}
+
+/**
+ * 批量上传文件（通用，支持所有文件类型）
+ * @param {FileList|File[]} files - 要上传的文件列表
+ * @returns {Promise}
+ */
+export function uploadFiles(files) {
+  const formData = new FormData()
+
+  // 将文件添加到 FormData
+  if (files instanceof FileList) {
+    Array.from(files).forEach(file => {
+      formData.append('files', file)
+    })
+  } else if (Array.isArray(files)) {
+    files.forEach(file => {
+      formData.append('files', file)
+    })
+  } else {
+    formData.append('files', files)
+  }
+
+  // 获取 token
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+
+  // 构建请求 URL
+  const baseUrl = import.meta.env.VITE_API_PREFIX || '/api'
+  const url = baseUrl.startsWith('http')
+    ? `${baseUrl}/upload/files`
+    : `${window.location.protocol}//${window.location.host}${baseUrl}/upload/files`
+
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: token ? `Bearer ${token}` : ''
     },
     body: formData
   }).then(async response => {

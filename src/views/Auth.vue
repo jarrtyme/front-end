@@ -4,7 +4,7 @@
       <el-tabs v-model="activeTab" class="auth-tabs" @tab-change="handleTabChange">
         <el-tab-pane label="登录" name="login">
           <div class="auth-header">
-            <h2>欢迎登录1</h2>
+            <h2>欢迎登录</h2>
             <p>请输入您的账号和密码</p>
           </div>
 
@@ -150,6 +150,7 @@
 <script setup>
 import { User, Lock, Message } from '@element-plus/icons-vue'
 import { register as registerApi } from '@/api/auth'
+import { ElMessage } from 'element-plus'
 
 defineOptions({
   name: 'Auth'
@@ -167,6 +168,17 @@ watch(
     activeTab.value = path === '/register' ? 'register' : 'login'
   }
 )
+
+// 组件挂载时检查是否有登录提示消息
+onMounted(() => {
+  const loginMessage = sessionStorage.getItem('loginMessage')
+  if (loginMessage) {
+    // 显示提示消息
+    ElMessage.warning(loginMessage)
+    // 清除消息，避免重复显示
+    sessionStorage.removeItem('loginMessage')
+  }
+})
 
 // 登录相关
 const loginFormRef = ref(null)
@@ -268,8 +280,11 @@ const handleLogin = async () => {
     try {
       const userStore = useUserStore()
 
-      // 调用 store 的登录方法（会自动调用 API 并保存 token）
-      await userStore.login(loginForm)
+      // 调用 store 的登录方法，传递 rememberMe 状态
+      // 根据 rememberMe 决定 token 存储方式：
+      // - true: 存储在 localStorage（持久化，关闭浏览器后仍有效）
+      // - false: 存储在 sessionStorage（会话级，关闭浏览器后清除）
+      await userStore.login(loginForm, rememberMe.value)
 
       ElMessage.success('登录成功')
 
@@ -307,7 +322,8 @@ const handleRegister = async () => {
       // 处理注册响应，保存 token 和用户信息
       const userStore = useUserStore()
       if (response && response.data) {
-        userStore.handleRegisterResponse(response)
+        // 注册成功后自动登录，根据 rememberMe 状态选择存储方式
+        userStore.handleRegisterResponse(response, rememberMe.value)
         ElMessage.success(response.message || '注册成功！')
       } else {
         ElMessage.success('注册成功！请登录')

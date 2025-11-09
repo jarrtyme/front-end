@@ -45,6 +45,63 @@ const router = createRouter({
         title: '关于我们',
         requiresAuth: false
       }
+    },
+    {
+      path: '/admin',
+      name: 'Admin',
+      component: () => import('@/views/home/LayOut/layout.vue'),
+      redirect: '/admin/dashboard',
+      meta: {
+        title: '后台管理',
+        requiresAuth: true
+      },
+      children: [
+        {
+          path: 'dashboard',
+          name: 'AdminDashboard',
+          component: () => import('@/views/home/LayOut/pages/Dashboard.vue'),
+          meta: {
+            title: '仪表盘',
+            requiresAuth: true
+          }
+        },
+        {
+          path: 'users',
+          name: 'AdminUsers',
+          component: () => import('@/views/home/LayOut/pages/Users.vue'),
+          meta: {
+            title: '用户管理',
+            requiresAuth: true
+          }
+        },
+        {
+          path: 'clothing',
+          name: 'AdminClothing',
+          component: () => import('@/views/home/LayOut/pages/ClotherMangement.vue'),
+          meta: {
+            title: '服装管理',
+            requiresAuth: true
+          }
+        },
+        {
+          path: 'upload',
+          name: 'AdminUpload',
+          component: () => import('@/views/home/LayOut/pages/Upload.vue'),
+          meta: {
+            title: '文件上传',
+            requiresAuth: true
+          }
+        },
+        {
+          path: 'settings',
+          name: 'AdminSettings',
+          component: () => import('@/views/home/LayOut/pages/Settings.vue'),
+          meta: {
+            title: '系统设置',
+            requiresAuth: true
+          }
+        }
+      ]
     }
   ]
 })

@@ -6,7 +6,7 @@ export const useAppStore = defineStore('app', {
     version: '1.0.0'
   }),
   getters: {
-    appInfo: (state) => `${state.title} v${state.version}`
+    appInfo: state => `${state.title} v${state.version}`
   },
   actions: {
     setTitle(title) {

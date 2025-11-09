@@ -42,6 +42,7 @@ export default defineConfig({
     }
   },
   server: {
+    host: '0.0.0.0', // 监听所有网络接口，允许通过 IP 地址访问
     port: 8080,
     open: true,
     https: false, // 开发服务器使用 HTTP，如果需要 HTTPS 可以设置为 true
