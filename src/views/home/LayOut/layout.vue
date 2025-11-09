@@ -150,6 +150,12 @@ const menuItems = ref([
         label: '文件上传',
         path: '/admin/upload',
         description: '上传和管理文件'
+      },
+      {
+        key: 'media',
+        label: '媒体库管理',
+        path: '/admin/media',
+        description: '管理官网图片和视频，支持描述管理'
       }
     ]
   },

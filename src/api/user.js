@@ -35,6 +35,20 @@ export function updateUserStatus(userId, isActive) {
 }
 
 /**
+ * 更新用户信息（管理员）
+ * @param {string} userId - 用户ID
+ * @param {Object} data - 更新数据
+ * @param {string} data.username - 用户名
+ * @param {string} data.email - 邮箱
+ * @param {string} data.role - 角色
+ * @param {boolean} data.isActive - 是否激活
+ * @returns {Promise}
+ */
+export function updateUser(userId, data) {
+  return post(`/auth/users/${userId}/update`, data)
+}
+
+/**
  * 删除用户（管理员）
  * @param {string} userId - 用户ID
  * @returns {Promise}

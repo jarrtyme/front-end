@@ -42,6 +42,13 @@
             </el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="isActive" label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.isActive !== false ? 'success' : 'danger'">
+              {{ row.isActive !== false ? '启用' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="createdAt" label="创建时间" width="180">
           <template #default="{ row }">
             {{ row.createdAt ? new Date(row.createdAt).toLocaleString('zh-CN') : '-' }}
@@ -68,12 +75,42 @@
         />
       </div>
     </el-card>
+
+    <!-- 编辑用户对话框 -->
+    <el-dialog
+      v-model="editDialogVisible"
+      title="编辑用户"
+      width="500px"
+      @close="handleDialogClose"
+    >
+      <el-form :model="editForm" :rules="editRules" ref="editFormRef" label-width="80px">
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="editForm.username" placeholder="请输入用户名" />
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editForm.email" type="email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="角色" prop="role">
+          <el-select v-model="editForm.role" placeholder="请选择角色" style="width: 100%">
+            <el-option label="普通用户" value="user" />
+            <el-option label="管理员" value="admin" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态" prop="isActive">
+          <el-switch v-model="editForm.isActive" active-text="启用" inactive-text="禁用" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmEdit" :loading="editLoading">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { Plus, Search } from '@element-plus/icons-vue'
-import { getUserList, deleteUser } from '@/api/user'
+import { getUserList, deleteUser, updateUser } from '@/api/user'
 
 defineOptions({
   name: 'Users'
@@ -86,6 +123,31 @@ const pageSize = ref(10)
 const total = ref(0)
 const userList = ref([])
 
+// 编辑相关
+const editDialogVisible = ref(false)
+const editLoading = ref(false)
+const editFormRef = ref(null)
+const editForm = ref({
+  _id: '',
+  username: '',
+  email: '',
+  role: 'user',
+  isActive: true
+})
+
+// 表单验证规则
+const editRules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' }
+  ],
+  email: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+  ],
+  role: [{ required: true, message: '请选择角色', trigger: 'change' }]
+}
+
 // 加载用户列表
 const loadUserList = async () => {
   loading.value = true
@@ -95,10 +157,9 @@ const loadUserList = async () => {
       limit: pageSize.value
     }
 
-    // 如果有搜索关键词，添加到查询参数
+    // 如果有搜索关键词，添加到查询参数（后端会使用 $or 查询）
     if (searchKeyword.value) {
       params.username = searchKeyword.value
-      params.email = searchKeyword.value
     }
 
     const response = await getUserList(params)
@@ -138,7 +199,52 @@ const handleAdd = () => {
 }
 
 const handleEdit = row => {
-  ElMessage.info(`编辑用户: ${row.username}`)
+  editForm.value = {
+    _id: row._id || row.id,
+    username: row.username || '',
+    email: row.email || '',
+    role: row.role || 'user',
+    isActive: row.isActive !== false
+  }
+  editDialogVisible.value = true
+}
+
+const handleDialogClose = () => {
+  editFormRef.value?.resetFields()
+  editForm.value = {
+    _id: '',
+    username: '',
+    email: '',
+    role: 'user',
+    isActive: true
+  }
+}
+
+const confirmEdit = async () => {
+  if (!editFormRef.value) return
+
+  try {
+    await editFormRef.value.validate()
+
+    editLoading.value = true
+    const { _id, ...updateData } = editForm.value
+    const response = await updateUser(_id, updateData)
+
+    if (response.code === 200) {
+      ElMessage.success('更新成功')
+      editDialogVisible.value = false
+      loadUserList()
+    } else {
+      ElMessage.error(response.message || '更新失败')
+    }
+  } catch (error) {
+    if (error !== false) {
+      console.error('更新用户失败:', error)
+      ElMessage.error(error.message || '更新失败')
+    }
+  } finally {
+    editLoading.value = false
+  }
 }
 
 const handleDelete = async row => {

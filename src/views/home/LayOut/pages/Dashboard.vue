@@ -110,6 +110,10 @@
               <el-icon><Upload /></el-icon>
               文件上传
             </el-button>
+            <el-button type="danger" @click="goToMedia">
+              <el-icon><Picture /></el-icon>
+              媒体库管理
+            </el-button>
             <el-button type="info" @click="goToSettings">
               <el-icon><Setting /></el-icon>
               系统设置
@@ -122,7 +126,7 @@
 </template>
 
 <script setup>
-import { User, Box, Upload, ShoppingCart, Setting } from '@element-plus/icons-vue'
+import { User, Box, Upload, ShoppingCart, Setting, Picture } from '@element-plus/icons-vue'
 import { getUserList } from '@/api/user'
 import { findClothing, getClothingStats } from '@/api/clothing'
 import { getImageList } from '@/api/upload'
@@ -203,6 +207,10 @@ const goToClothing = () => {
 
 const goToUpload = () => {
   router.push('/admin/upload')
+}
+
+const goToMedia = () => {
+  router.push('/admin/media')
 }
 
 const goToSettings = () => {

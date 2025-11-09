@@ -86,10 +86,26 @@
             <el-image
               v-if="isImage(row.name)"
               :src="getImageUrl(row.url)"
-              style="width: 60px; height: 60px"
+              style="width: 60px; height: 60px; cursor: pointer"
               fit="cover"
               :preview-src-list="[getImageUrl(row.url)]"
             />
+            <div
+              v-else-if="isVideo(row.name)"
+              class="video-preview-small"
+              @click="handleVideoPreview(row)"
+            >
+              <video
+                :src="getImageUrl(row.url)"
+                style="width: 60px; height: 60px; object-fit: cover"
+                muted
+                @mouseenter="handleVideoHover($event, true)"
+                @mouseleave="handleVideoHover($event, false)"
+              />
+              <div class="video-play-icon-small">
+                <el-icon :size="20"><VideoPlay /></el-icon>
+              </div>
+            </div>
             <el-button v-else type="primary" link :icon="Download" @click="handleDownload(row)">
               下载
             </el-button>
@@ -107,11 +123,25 @@
         </el-table-column>
       </el-table>
     </el-card>
+
+    <!-- 视频预览对话框 -->
+    <el-dialog
+      v-model="videoPreviewVisible"
+      :title="videoPreviewTitle"
+      width="800px"
+      @close="videoPreviewUrl = ''"
+    >
+      <div class="video-preview-container">
+        <video :src="videoPreviewUrl" controls autoplay style="width: 100%; max-height: 70vh">
+          您的浏览器不支持视频播放
+        </video>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { UploadFilled, Refresh, Download } from '@element-plus/icons-vue'
+import { UploadFilled, Refresh, Download, VideoPlay } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { uploadImages, uploadFiles, getImageList, deleteImage } from '@/api/upload'
 
@@ -126,6 +156,11 @@ const loading = ref(false)
 
 // 文件列表
 const fileList = ref([])
+
+// 视频预览相关
+const videoPreviewVisible = ref(false)
+const videoPreviewUrl = ref('')
+const videoPreviewTitle = ref('')
 
 // 加载文件列表
 const loadFileList = async () => {
@@ -317,6 +352,12 @@ const isImage = filename => {
   return imageExtensions.some(ext => filename.toLowerCase().endsWith(ext))
 }
 
+// 判断是否为视频
+const isVideo = filename => {
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv', '.mkv']
+  return videoExtensions.some(ext => filename.toLowerCase().endsWith(ext))
+}
+
 // 根据文件名获取文件类型
 const getFileTypeFromName = filename => {
   if (!filename) return 'other'
@@ -364,6 +405,26 @@ const handleDownload = row => {
   document.body.removeChild(link)
   ElMessage.success('开始下载文件')
 }
+
+// 视频预览
+const handleVideoPreview = row => {
+  videoPreviewUrl.value = getImageUrl(row.url)
+  videoPreviewTitle.value = row.name || '视频预览'
+  videoPreviewVisible.value = true
+}
+
+// 视频悬停效果
+const handleVideoHover = (event, isEnter) => {
+  const video = event.target
+  if (isEnter) {
+    video.play().catch(() => {
+      // 如果自动播放失败，忽略错误
+    })
+  } else {
+    video.pause()
+    video.currentTime = 0
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -391,6 +452,46 @@ const handleDownload = row => {
 
   .el-divider {
     margin: 20px 0;
+  }
+
+  .video-preview-small {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #000;
+    display: inline-block;
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .video-play-icon-small {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(255, 255, 255, 0.9);
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    &:hover .video-play-icon-small {
+      opacity: 0.8;
+    }
+  }
+
+  .video-preview-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+    border-radius: 4px;
+    overflow: hidden;
   }
 }
 </style>

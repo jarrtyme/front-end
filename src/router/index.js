@@ -93,6 +93,15 @@ const router = createRouter({
           }
         },
         {
+          path: 'media',
+          name: 'AdminMedia',
+          component: () => import('@/views/home/LayOut/pages/MediaLibrary.vue'),
+          meta: {
+            title: '媒体库管理',
+            requiresAuth: true
+          }
+        },
+        {
           path: 'settings',
           name: 'AdminSettings',
           component: () => import('@/views/home/LayOut/pages/Settings.vue'),
