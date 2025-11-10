@@ -41,8 +41,8 @@ function getRequestUrl(url) {
 
 /**
  * 检查 token 是否即将过期
- * @param {string} token - JWT token
- * @param {number} thresholdSeconds - 过期阈值（秒），默认1小时
+ * @param {string} token - JWT token（有效期15天）
+ * @param {number} thresholdSeconds - 过期阈值（秒），默认1小时，当token剩余时间小于此值时触发刷新
  * @returns {boolean} - 是否即将过期
  */
 function isTokenExpiringSoon(token, thresholdSeconds = 3600) {

@@ -2,6 +2,8 @@
 // 注意：在 .js 配置文件中，建议保留手动导入以确保稳定性
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import homeRoutes from './home'
+import layoutRoutes from './layout'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -26,92 +28,10 @@ const router = createRouter({
         requiresAuth: false
       }
     },
-    {
-      path: '/',
-      name: 'Home',
-      component: () => import('@/views/home/Home.vue'),
-      meta: {
-        keepAlive: true,
-        title: '首页',
-        requiresAuth: false // 首页不需要登录
-      }
-    },
-    {
-      path: '/about',
-      name: 'About',
-      component: () => import('@/views/About.vue'),
-      meta: {
-        keepAlive: true,
-        title: '关于我们',
-        requiresAuth: false
-      }
-    },
-    {
-      path: '/admin',
-      name: 'Admin',
-      component: () => import('@/views/home/LayOut/layout.vue'),
-      redirect: '/admin/dashboard',
-      meta: {
-        title: '后台管理',
-        requiresAuth: true
-      },
-      children: [
-        {
-          path: 'dashboard',
-          name: 'AdminDashboard',
-          component: () => import('@/views/home/LayOut/pages/Dashboard.vue'),
-          meta: {
-            title: '仪表盘',
-            requiresAuth: true
-          }
-        },
-        {
-          path: 'users',
-          name: 'AdminUsers',
-          component: () => import('@/views/home/LayOut/pages/Users.vue'),
-          meta: {
-            title: '用户管理',
-            requiresAuth: true
-          }
-        },
-        {
-          path: 'clothing',
-          name: 'AdminClothing',
-          component: () => import('@/views/home/LayOut/pages/ClotherMangement.vue'),
-          meta: {
-            title: '服装管理',
-            requiresAuth: true
-          }
-        },
-        {
-          path: 'upload',
-          name: 'AdminUpload',
-          component: () => import('@/views/home/LayOut/pages/Upload.vue'),
-          meta: {
-            title: '文件上传',
-            requiresAuth: true
-          }
-        },
-        {
-          path: 'media',
-          name: 'AdminMedia',
-          component: () => import('@/views/home/LayOut/pages/MediaLibrary.vue'),
-          meta: {
-            title: '媒体库管理',
-            requiresAuth: true
-          }
-        },
-        {
-          path: 'settings',
-          name: 'AdminSettings',
-          component: () => import('@/views/home/LayOut/pages/Settings.vue'),
-          meta: {
-            title: '系统设置',
-            requiresAuth: true
-          }
-        }
-      ]
-    }
+    // 首页相关路由
+    ...homeRoutes,
+    // 后台管理布局相关路由
+    ...layoutRoutes
   ]
 })
 

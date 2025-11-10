@@ -15,7 +15,7 @@ defineOptions({
 
 <style lang="scss" scoped>
 .header-menu {
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(2px);
   background-color: transparent;
   width: auto;
   height: 66px;

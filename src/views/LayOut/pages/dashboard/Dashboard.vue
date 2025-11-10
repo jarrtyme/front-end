@@ -129,7 +129,7 @@
 import { User, Box, Upload, ShoppingCart, Setting, Picture } from '@element-plus/icons-vue'
 import { getUserList } from '@/api/user'
 import { findClothing, getClothingStats } from '@/api/clothing'
-import { getImageList } from '@/api/upload'
+import { getFileList } from '@/api/upload'
 
 defineOptions({
   name: 'Dashboard'
@@ -155,7 +155,7 @@ const loadStats = async () => {
     const [userRes, clothingRes, imageRes, statsRes] = await Promise.allSettled([
       getUserList({ page: 1, limit: 1 }),
       findClothing({ page: 1, limit: 1 }),
-      getImageList(),
+      getFileList(),
       getClothingStats()
     ])
 
@@ -210,7 +210,7 @@ const goToUpload = () => {
 }
 
 const goToMedia = () => {
-  router.push('/admin/media')
+  router.push('/admin/upload')
 }
 
 const goToSettings = () => {
@@ -263,7 +263,7 @@ const goToSettings = () => {
         text-align: center;
         padding: 30px 20px;
         background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: saturate(180%) blur(20px);
+        backdrop-filter: blur(2px);
         border-radius: 18px;
         border: 0.5px solid rgba(0, 0, 0, 0.1);
         transition:
@@ -327,7 +327,7 @@ const goToSettings = () => {
   .content-row {
     .el-card {
       background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: saturate(180%) blur(20px);
+      backdrop-filter: blur(2px);
       border: 0.5px solid rgba(0, 0, 0, 0.1);
       border-radius: 18px;
       box-shadow: none;

@@ -147,15 +147,9 @@ const menuItems = ref([
     children: [
       {
         key: 'upload',
-        label: '文件上传',
+        label: '文件管理',
         path: '/admin/upload',
-        description: '上传和管理文件'
-      },
-      {
-        key: 'media',
-        label: '媒体库管理',
-        path: '/admin/media',
-        description: '管理官网图片和视频，支持描述管理'
+        description: '上传和管理文件，支持媒体库描述管理'
       }
     ]
   },
@@ -270,9 +264,9 @@ onMounted(() => {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  background-color: rgba(255, 255, 255, 0.463);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 
@@ -364,8 +358,8 @@ onMounted(() => {
 
 .dropdown-content {
   background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   border-radius: 12px;
   padding: 8px 0;
   min-width: 240px;
@@ -425,8 +419,8 @@ onMounted(() => {
   top: calc(100% + 12px);
   right: 0;
   background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   border-radius: 12px;
   padding: 8px 0;
   min-width: 200px;

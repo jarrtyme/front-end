@@ -5,29 +5,27 @@
     <div class="header-bg" style="height: 60px"></div>
     <div class="home">
       <Carousel />
+      <VideoPlayer
+        src="https://www.apple.com/105/media/us/macbook-pro/2025/785e1bc4-d1bd-4cf4-b1b3-94b9411c9e74/anim/performance-chip-background/medium.mp4"
+      />
+      <ImageCarousel />
       <WelcomeCard :app-info="appStore.appInfo" @click="handleClick" />
       <DescriptionsList :list="descriptionsList" />
-      <PicManagement />
-      <ClotherMangement />
     </div>
-
-    <LayOut />
   </el-main>
 
   <Footer />
 </template>
 
 <script setup name="Home">
-import Carousel from '@/components/carousel.vue'
+import Carousel from '@/components/Carousel.vue'
+import ImageCarousel from '@/components/ImageCarousel.vue'
+import VideoPlayer from '@/components/VideoPlayer.vue'
+
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
 import WelcomeCard from './components/WelcomeCard.vue'
 import DescriptionsList from './components/DescriptionsList.vue'
-
-import PicManagement from './components/PicManagement.vue'
-import ClotherMangement from './components/ClotherMangement.vue'
-
-import LayOut from './LayOut/layout.vue'
 
 // Pinia store 已自动导入，无需手动 import
 const appStore = useAppStore()

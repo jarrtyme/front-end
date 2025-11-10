@@ -48,12 +48,21 @@ export function updateMedia(id, data) {
 }
 
 /**
- * 删除媒体
+ * 删除媒体（单个）
  * @param {string} id - 媒体ID
  * @returns {Promise}
  */
 export function deleteMedia(id) {
   return post('/media/remove', { id })
+}
+
+/**
+ * 批量删除媒体
+ * @param {Array<string>} ids - 媒体ID数组
+ * @returns {Promise}
+ */
+export function deleteMedias(ids) {
+  return post('/media/remove', { ids })
 }
 
 /**

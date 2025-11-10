@@ -5,11 +5,11 @@ import { createPinia } from 'pinia'
 import router from './router'
 import App from './App.vue'
 
-// 先导入 Element Plus 基础样式
-import 'element-plus/dist/index.css'
+// 导入 Element Plus 自定义主题（包含样式和变量配置）
+import './styles/element-theme.scss'
 // 然后导入我们的全局样式
 import './styles/main.scss'
-// 最后导入 Element Plus 变量覆盖，确保优先级最高（覆盖 Element Plus 组件中的变量定义）
+// 最后导入 Element Plus 组件样式覆盖
 import './styles/element-plus.scss'
 
 const app = createApp(App)

@@ -77,10 +77,13 @@
     </el-card>
 
     <!-- 编辑用户对话框 -->
-    <el-dialog
+    <ModernDialog
       v-model="editDialogVisible"
       title="编辑用户"
       width="500px"
+      confirm-text="确定"
+      :confirm-loading="editLoading"
+      @confirm="confirmEdit"
       @close="handleDialogClose"
     >
       <el-form :model="editForm" :rules="editRules" ref="editFormRef" label-width="80px">
@@ -100,17 +103,14 @@
           <el-switch v-model="editForm.isActive" active-text="启用" inactive-text="禁用" />
         </el-form-item>
       </el-form>
-      <template #footer>
-        <el-button @click="editDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmEdit" :loading="editLoading">确定</el-button>
-      </template>
-    </el-dialog>
+    </ModernDialog>
   </div>
 </template>
 
 <script setup>
 import { Plus, Search } from '@element-plus/icons-vue'
 import { getUserList, deleteUser, updateUser } from '@/api/user'
+import ModernDialog from '@/components/ModernDialog.vue'
 
 defineOptions({
   name: 'Users'

@@ -22,15 +22,17 @@
               />
             </el-form-item>
             <el-form-item label="网站Logo">
-              <el-upload
-                class="avatar-uploader"
-                action="#"
+              <FileUpload
+                file-type="image"
+                :max-size="50"
+                :max-count="1"
+                :multiple="false"
+                :drag="false"
+                list-type="avatar"
+                :avatar-url="basicSettings.logo"
                 :show-file-list="false"
-                :on-success="handleLogoSuccess"
-              >
-                <img v-if="basicSettings.logo" :src="basicSettings.logo" class="avatar" />
-                <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
-              </el-upload>
+                @success="handleLogoSuccess"
+              />
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="saveBasicSettings">保存设置</el-button>
@@ -93,7 +95,9 @@
 </template>
 
 <script setup>
-import { Plus } from '@element-plus/icons-vue'
+import { ref, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
+import FileUpload from '@/components/FileUpload.vue'
 
 defineOptions({
   name: 'Settings'
@@ -123,9 +127,14 @@ const notificationSettings = reactive({
   systemNotification: true
 })
 
-const handleLogoSuccess = response => {
-  // TODO: 处理Logo上传
-  ElMessage.success('Logo上传成功')
+const handleLogoSuccess = (response, file) => {
+  if (response.code === 200) {
+    const fileData = response.data.files ? response.data.files[0] : response.data
+    if (fileData) {
+      basicSettings.logo = fileData.url || fileData.path
+      ElMessage.success('Logo上传成功')
+    }
+  }
 }
 
 const saveBasicSettings = () => {

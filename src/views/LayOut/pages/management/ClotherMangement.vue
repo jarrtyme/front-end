@@ -154,11 +154,14 @@
     </el-card>
 
     <!-- 创建/编辑对话框 -->
-    <el-dialog
+    <ModernDialog
       v-model="dialogVisible"
       :title="dialogTitle"
       width="800px"
       :close-on-click-modal="false"
+      confirm-text="确定"
+      :confirm-loading="submitting"
+      @confirm="handleSubmit"
     >
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
         <el-row :gutter="20">
@@ -170,20 +173,20 @@
           <el-col :span="24">
             <el-form-item label="商品图片" prop="imageUrl">
               <div class="image-upload-container">
-                <el-upload
+                <FileUpload
                   ref="uploadRef"
-                  :http-request="handleCustomUpload"
-                  :file-list="imageFileList"
-                  :on-remove="handleRemoveImage"
-                  :before-upload="beforeUpload"
-                  :limit="10"
-                  multiple
+                  file-type="image"
+                  :max-size="50"
+                  :max-count="10"
+                  :multiple="true"
+                  :drag="false"
                   list-type="picture-card"
-                  accept="image/*"
-                >
-                  <el-icon><Plus /></el-icon>
-                  <div class="upload-tip">点击上传图片<br />最多10张</div>
-                </el-upload>
+                  :file-list="imageFileList"
+                  upload-text="点击上传图片<br />最多10张"
+                  @success="handleImageUploadSuccess"
+                  @error="handleImageUploadError"
+                  @remove="handleRemoveImage"
+                />
               </div>
               <div class="image-preview-list" v-if="uploadedImages.length > 0">
                 <div v-for="(img, index) in uploadedImages" :key="index" class="image-preview-item">
@@ -312,21 +315,17 @@
           </el-col>
         </el-row>
       </el-form>
-
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmit" :loading="submitting"> 确定 </el-button>
-        </span>
-      </template>
-    </el-dialog>
+    </ModernDialog>
 
     <!-- 补货对话框 -->
-    <el-dialog
+    <ModernDialog
       v-model="restockDialogVisible"
       title="补货"
       width="400px"
       :close-on-click-modal="false"
+      confirm-text="确定"
+      :confirm-loading="restocking"
+      @confirm="handleRestockSubmit"
     >
       <el-form
         ref="restockFormRef"
@@ -347,19 +346,13 @@
           />
         </el-form-item>
       </el-form>
-
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="restockDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleRestockSubmit" :loading="restocking">
-            确定
-          </el-button>
-        </span>
-      </template>
-    </el-dialog>
+    </ModernDialog>
 
     <!-- 统计信息对话框 -->
-    <el-dialog v-model="statsDialogVisible" title="库存统计" width="600px">
+    <ModernDialog v-model="statsDialogVisible" title="库存统计" width="600px">
+      <template #footer>
+        <div></div>
+      </template>
       <el-descriptions :column="2" border v-if="statsData">
         <el-descriptions-item label="总商品数">
           {{ statsData.totalItems }}
@@ -393,7 +386,7 @@
           </span>
         </el-descriptions-item>
       </el-descriptions>
-    </el-dialog>
+    </ModernDialog>
   </div>
 </template>
 
@@ -407,9 +400,10 @@ import {
   restockClothing,
   getClothingStats
 } from '@/api/clothing'
-import { uploadImages } from '@/api/upload'
+import FileUpload from '@/components/FileUpload.vue'
 import { Search, Refresh, Delete, Edit, Plus, Picture, DataAnalysis } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import ModernDialog from '@/components/ModernDialog.vue'
 
 // 响应式数据
 const clothingList = ref([])
@@ -448,42 +442,36 @@ const imageFileList = ref([])
 const uploadedImages = ref([]) // 已上传的图片路径数组
 const uploading = ref(false)
 
-// 自定义上传方法
-const handleCustomUpload = async options => {
-  const { file } = options
+// 图片上传成功
+const handleImageUploadSuccess = async (response, file) => {
   uploading.value = true
-
   try {
-    const response = await uploadImages([file])
     if (response.code === 200) {
-      // 批量上传返回 files 数组
-      if (response.data && response.data.files) {
-        response.data.files.forEach(fileInfo => {
-          if (!uploadedImages.value.includes(fileInfo.path)) {
-            uploadedImages.value.push(fileInfo.path)
-          }
-        })
-      }
-      // 单个上传返回单个文件对象
-      else if (response.data && response.data.path) {
-        if (!uploadedImages.value.includes(response.data.path)) {
-          uploadedImages.value.push(response.data.path)
+      // 统一接口：单个文件返回 data 是单个对象，多个文件返回 data.files 数组
+      const files = response.data.files ? response.data.files : [response.data]
+      files.forEach(fileInfo => {
+        // 优先使用 url 字段（完整URL），如果没有则使用 path（现在也是完整URL）
+        const imageUrl = fileInfo.url || fileInfo.path
+        if (imageUrl && !uploadedImages.value.includes(imageUrl)) {
+          uploadedImages.value.push(imageUrl)
         }
+      })
+      // 更新 file-list（从上传组件获取）
+      if (uploadRef.value && uploadRef.value.uploadRef) {
+        imageFileList.value = uploadRef.value.uploadRef.fileList || []
       }
-      ElMessage.success('图片上传成功')
-      // 更新 file-list，标记为成功
-      options.onSuccess(response, file)
-    } else {
-      ElMessage.error(response.message || '图片上传失败')
-      options.onError(new Error(response.message || '上传失败'))
     }
   } catch (error) {
-    console.error('上传失败:', error)
-    ElMessage.error(error.message || '图片上传失败，请重试')
-    options.onError(error)
+    console.error('处理上传成功失败:', error)
   } finally {
     uploading.value = false
   }
+}
+
+// 图片上传失败
+const handleImageUploadError = (error, file) => {
+  uploading.value = false
+  console.error('上传失败:', error, file)
 }
 
 // 补货对话框
@@ -550,24 +538,19 @@ const getImageListFromRow = row => {
 }
 
 // 获取图片完整 URL
-const getImageUrl = path => {
-  if (!path) return ''
-  // 如果路径已经是完整 URL，直接返回
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path
+// 后端已经返回完整的 URL，直接使用即可
+const getImageUrl = url => {
+  if (!url) return ''
+  // 如果已经是完整 URL，直接返回
+  if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+    return url
   }
-  // 相对路径，自动使用当前页面的协议（HTTP/HTTPS）
-  // 这样在 HTTPS 页面中会自动使用 HTTPS，避免混合内容问题
-  const protocol = window.location.protocol // 自动获取当前页面协议
-  const host = window.location.host // 自动获取当前域名
-
-  // 如果是 /uploads/ 开头的路径，直接使用当前域名
-  if (path.startsWith('/uploads/')) {
-    return `${protocol}//${host}${path}`
+  // 如果是对象（兼容旧代码），尝试获取 url 或 path
+  if (typeof url === 'object') {
+    return url.url || url.path || ''
   }
-
-  // 其他相对路径
-  return `${protocol}//${host}${path.startsWith('/') ? path : '/' + path}`
+  // 直接返回（后端已返回完整URL）
+  return url
 }
 
 // 格式化数字（保留两位小数）
@@ -714,35 +697,25 @@ const handleSubmit = async () => {
   })
 }
 
-// 图片上传前验证
-const beforeUpload = file => {
-  const isImage = file.type.startsWith('image/')
-  const isLt10M = file.size / 1024 / 1024 < 10
-
-  if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
-    return false
-  }
-  if (!isLt10M) {
-    ElMessage.error('图片大小不能超过 10MB!')
-    return false
-  }
-  return true
-}
-
 // 移除上传组件中的图片
 const handleRemoveImage = (file, fileList) => {
   // 从已上传列表中移除
   if (file.response && file.response.data) {
-    const path =
-      file.response.data.path || (file.response.data.files && file.response.data.files[0]?.path)
-    if (path) {
-      const index = uploadedImages.value.indexOf(path)
+    // 优先使用 url 字段（完整URL），如果没有则使用 path（现在也是完整URL）
+    const imageUrl =
+      file.response.data.url ||
+      file.response.data.path ||
+      (file.response.data.files && file.response.data.files[0]?.url) ||
+      (file.response.data.files && file.response.data.files[0]?.path)
+    if (imageUrl) {
+      const index = uploadedImages.value.indexOf(imageUrl)
       if (index > -1) {
         uploadedImages.value.splice(index, 1)
       }
     }
   }
+  // 更新 file-list
+  imageFileList.value = fileList || []
 }
 
 // 移除已上传的图片
