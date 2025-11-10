@@ -15,6 +15,20 @@
     >
       您的浏览器不支持视频播放
     </video>
+    <!-- 文字镂空效果：纯色背景层，文字部分透明 -->
+    <div v-if="text" class="video-text-overlay" :style="overlayStyle">
+      <svg class="mask-svg" width="100%" height="100%">
+        <defs>
+          <mask :id="maskId" maskUnits="userSpaceOnUse">
+            <rect width="100%" height="100%" fill="white" />
+            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="mask-text">
+              {{ text }}
+            </text>
+          </mask>
+        </defs>
+        <rect width="100%" height="100%" fill="white" :mask="`url(#${maskId})`" />
+      </svg>
+    </div>
     <!-- 右上角播放控件 -->
     <div class="video-controls" :class="{ 'is-visible': showControls }">
       <el-button
@@ -29,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { VideoPlay, VideoPause } from '@element-plus/icons-vue'
 
 const props = defineProps({
@@ -62,11 +76,42 @@ const props = defineProps({
   showControls: {
     type: Boolean,
     default: true
+  },
+  // 镂空文字内容
+  text: {
+    type: String,
+    default: '镂空文字内容'
+  },
+  // 背景层颜色
+  overlayColor: {
+    type: String,
+    default: '#00000000'
+  },
+  // 背景层透明度
+  overlayOpacity: {
+    type: Number,
+    default: 0.8
   }
 })
 
 const videoRef = ref(null)
 const isPlaying = ref(false)
+
+// 生成唯一的 mask ID（避免多个组件实例冲突）
+const maskId = ref(`text-mask-${Math.random().toString(36).substr(2, 9)}`)
+
+// 计算背景层样式
+const overlayStyle = computed(() => {
+  const color = props.overlayColor || '#000000'
+  const opacity = props.overlayOpacity || 0.8
+  // 将颜色转换为 rgba 格式
+  const rgb = color.startsWith('#')
+    ? color.match(/[A-Za-z0-9]{2}/g)?.map(v => parseInt(v, 16)) || [0, 0, 0]
+    : [0, 0, 0]
+  return {
+    backgroundColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${opacity})`
+  }
+})
 
 // 播放
 const handlePlay = () => {
@@ -206,6 +251,44 @@ defineExpose({
 
       &:hover {
         opacity: 1;
+      }
+    }
+  }
+
+  // 文字镂空效果：纯色背景层，文字部分透明
+  .video-text-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none; // 不阻挡视频交互
+    overflow: hidden;
+    background-color: #00000000 !important;
+
+    // SVG mask 实现真正的镂空
+    .mask-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+
+      .mask-text {
+        font-size: 72px;
+        font-weight: 900;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        fill: black; // mask 中黑色表示透明，白色表示不透明
+        font-family: Arial, sans-serif;
+
+        @media (max-width: 768px) {
+          font-size: 48px;
+          letter-spacing: 2px;
+        }
+        @media (max-width: 480px) {
+          font-size: 36px;
+          letter-spacing: 1px;
+        }
       }
     }
   }
