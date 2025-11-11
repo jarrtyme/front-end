@@ -124,6 +124,8 @@ const props = defineProps({
 const emit = defineEmits(['success', 'error', 'before-upload', 'remove'])
 
 const uploadRef = ref(null)
+// 用于跟踪已触发成功事件的文件，防止重复触发
+const successEmittedFiles = new Set()
 
 // 文件类型验证规则
 const fileTypeRules = {
@@ -217,17 +219,23 @@ const beforeUpload = file => {
 const handleUpload = async options => {
   const { file, onSuccess, onError } = options
   try {
+    const fileKey = `${file.name}-${file.size}-${file.lastModified}`
     const response = await uploadFiles([file])
 
-    // 检查响应是否存在且格式正确
     if (!response) {
       onError(new Error('上传失败：服务器未返回响应'))
       return
     }
 
     if (response && typeof response === 'object' && response.code === 200) {
-      // 确保传递完整的响应对象给 Element Plus
       onSuccess(response, file)
+
+      // 直接触发 success 事件，确保每个文件上传成功后都能触发
+      // 因为 Element Plus 的 on-success 回调在多文件上传时可能不一致
+      if (!successEmittedFiles.has(fileKey)) {
+        successEmittedFiles.add(fileKey)
+        emit('success', response, file)
+      }
     } else {
       const errorMessage = response?.message || response?.error || '上传失败'
       onError(new Error(errorMessage))
@@ -237,20 +245,11 @@ const handleUpload = async options => {
   }
 }
 
-// 上传成功
-// Element Plus 的 on-success 回调签名是 (response, uploadFile, fileList)
-// 注意：使用 http-request 时，Element Plus 可能会多次调用此回调
-// 我们需要确保只在 response 有效时才触发事件
+// 上传成功回调（备用）
 const handleSuccess = (response, uploadFile, fileList) => {
-  // 确保 response 存在且格式正确
-  // Element Plus 可能会多次调用此回调，第二次可能 response 为 undefined
   if (!response || typeof response !== 'object' || response.code === undefined) {
     return
   }
-
-  // 使用 uploadFile 作为 file（Element Plus 传递的是 uploadFile 对象）
-  const file = uploadFile?.raw || uploadFile
-  emit('success', response, file)
 }
 
 // 上传失败

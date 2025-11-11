@@ -49,7 +49,7 @@
             ref="fileUploadRef"
             file-type="all"
             :max-size="50"
-            :max-count="10"
+            :max-count="200"
             :multiple="true"
             :drag="false"
             button-text="上传文件"
@@ -431,8 +431,7 @@ const handleFileSuccess = async (response, file) => {
       // 检查是否有 code 属性
       if (response.code === 200) {
         ElMessage.success('文件上传成功!')
-        // 重新加载文件列表
-        await loadFileList()
+        // 不再自动刷新文件列表
       } else {
         // 处理错误响应
         const errorMessage = response?.message || response?.error || '上传失败'
@@ -462,9 +461,20 @@ const handleAddToMediaLibrary = async row => {
   try {
     loading.value = true
     const fileType = row.fileType === 'image' ? 'image' : 'video'
+    // 优先使用 path（相对路径），确保与文件系统中的路径格式一致
+    // path 格式如：/uploads/images/xxx.jpg，与后端存储格式一致
+    const fileUrl = row.path || row.url
+    console.log(
+      '[前端] 添加到媒体库 - 文件路径:',
+      fileUrl,
+      '原始 url:',
+      row.url,
+      '原始 path:',
+      row.path
+    )
     const response = await createMedia({
       type: fileType,
-      url: row.url || row.path,
+      url: fileUrl,
       filename: row.name,
       size: row.size,
       mimetype: row.mimetype,

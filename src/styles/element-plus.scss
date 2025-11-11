@@ -1,23 +1,10 @@
 // Element Plus 组件样式覆盖
-// 注意：主题色配置通过 CSS 变量方式配置
+// 注意：主题色配置已通过 element/index.scss 使用 SCSS 变量方式配置
+// 这里只包含组件级别的样式覆盖
 
-// ==================== 主题色配置 ====================
-// 使用 CSS 变量覆盖 Element Plus 主题色
-// 主色：rgb(29,29,31) = #1d1d1f
-:root,
-html,
-body {
-  --el-color-primary: #27272dda !important;
-  --el-color-primary-light-3: #4d4d4f !important;
-  --el-color-primary-light-5: #6d6d6f !important;
-  --el-color-primary-light-7: #8d8d8f !important;
-  --el-color-primary-light-8: #9d9d9f !important;
-  --el-color-primary-light-9: #ededef !important;
-  --el-color-primary-dark-2: #2c2c33 !important;
-  --el-border-radius-base: 8px !important;
-  --el-border-radius-small: 10px !important;
-  --el-border-radius-round: 20px !important;
-}
+// 导入变量文件（通过 @use 导入时需要显式导入）
+@use './variables.scss' as *;
+
 // Element Plus 在组件样式中定义了变量（如 --el-header-padding: 0 20px;）
 // 这些变量在组件作用域内，优先级比 :root 高
 // 我们需要在组件上直接覆盖这些变量
@@ -30,7 +17,7 @@ body {
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: $z-index-top;
+  z-index: 19;
 }
 
 .el-main {

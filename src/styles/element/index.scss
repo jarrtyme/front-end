@@ -1,0 +1,41 @@
+// 导入项目变量，用于定义 Element Plus 主题色
+// 注意：虽然 variables.scss 已通过 vite.config.js 的 additionalData 自动导入
+// 但在这里需要显式导入，因为这是通过 @use 导入的文件
+@use '../variables.scss' as *;
+
+// 定义 Element Plus 主题色变量
+// 使用项目中的颜色变量，确保主题一致性
+$--colors: (
+  'primary': (
+    'base': $primary-color
+  ),
+  'success': (
+    'base': $success-color
+  ),
+  'warning': (
+    'base': $warning-color
+  ),
+  'danger': (
+    'base': $danger-color
+  ),
+  'error': (
+    'base': $danger-color
+  ),
+  'info': (
+    'base': $info-color
+  )
+);
+
+// 使用 @forward 覆盖 Element Plus 的默认变量
+// 这样可以在构建时自定义主题色
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  // 覆盖颜色变量
+  $colors: $--colors,
+  // 可以在这里覆盖其他变量，例如：
+  // $button-padding-horizontal: ('default': 50px),
+   // $border-radius-base: $border-radius-md
+);
+
+// 导入 Element Plus 的完整样式
+// 这样主题色配置才会生效
+@use 'element-plus/theme-chalk/src/index.scss' as *;

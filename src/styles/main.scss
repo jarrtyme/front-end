@@ -1,8 +1,8 @@
-// 注意：Element Plus 基础样式已在 main.js 中导入
-// Element Plus 变量覆盖也在 main.js 中最后导入，确保优先级
-// 变量已通过 vite.config.js 的 additionalData 自动导入
-// 这里只需要导入颜色函数和全局样式
+// 注意：Element Plus 基础样式已通过 styles/index.scss 自动导入
+// 变量已通过 vite.config.js 的 additionalData 自动导入（在 .vue 文件中）
+// 但通过 @use 导入此文件时，需要显式导入变量
 
+@use './variables.scss' as *;
 @use 'sass:color';
 
 // ==================== CSS 重置 ====================

@@ -1,5 +1,5 @@
 <template>
-  <div class="video-player-container" :class="{ 'is-playing': isPlaying }">
+  <div ref="containerRef" class="video-player-container" :class="{ 'is-playing': isPlaying }">
     <video
       ref="videoRef"
       :src="src"
@@ -15,18 +15,35 @@
     >
       您的浏览器不支持视频播放
     </video>
-    <!-- 文字镂空效果：纯色背景层，文字部分透明 -->
-    <div v-if="text" class="video-text-overlay" :style="overlayStyle">
+    <!-- 文字镂空效果：渐变色背景层，文字部分透明 -->
+    <div v-if="text" class="video-text-overlay">
       <svg class="mask-svg" width="100%" height="100%">
         <defs>
+          <linearGradient :id="`gradient-${maskId}`" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" :stop-color="gradientColors.start" />
+            <stop offset="50%" :stop-color="gradientColors.mid" />
+            <stop offset="100%" :stop-color="gradientColors.end" />
+          </linearGradient>
           <mask :id="maskId" maskUnits="userSpaceOnUse">
             <rect width="100%" height="100%" fill="white" />
-            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="mask-text">
+            <text
+              ref="maskTextRef"
+              x="50%"
+              y="50%"
+              dominant-baseline="middle"
+              text-anchor="middle"
+              class="mask-text"
+            >
               {{ text }}
             </text>
           </mask>
         </defs>
-        <rect width="100%" height="100%" fill="white" :mask="`url(#${maskId})`" />
+        <rect
+          width="100%"
+          height="100%"
+          :fill="`url(#gradient-${maskId})`"
+          :mask="`url(#${maskId})`"
+        />
       </svg>
     </div>
     <!-- 右上角播放控件 -->
@@ -39,12 +56,23 @@
         @click="togglePlay"
       />
     </div>
+    <!-- GSAP 滚动动画组件 -->
+    <ScrollAnimation
+      v-if="text"
+      :container="containerRef"
+      :target="maskTextRef"
+      :enabled="true"
+      :min-scale="20"
+      :max-scale="2"
+      :end="2000"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { VideoPlay, VideoPause } from '@element-plus/icons-vue'
+import ScrollAnimation from './ScrollAnimation.vue'
 
 const props = defineProps({
   // 视频源地址
@@ -82,36 +110,27 @@ const props = defineProps({
     type: String,
     default: '镂空文字内容'
   },
-  // 背景层颜色
-  overlayColor: {
-    type: String,
-    default: '#00000000'
-  },
-  // 背景层透明度
-  overlayOpacity: {
-    type: Number,
-    default: 0.8
+  // 渐变色配置
+  gradientColors: {
+    type: Object,
+    default: () => ({
+      start: '#000', // 紫色
+      mid: '#000', // 深紫色
+      end: '#000' // 粉紫色
+    })
   }
 })
 
 const videoRef = ref(null)
 const isPlaying = ref(false)
+const containerRef = ref(null)
+const maskTextRef = ref(null)
 
 // 生成唯一的 mask ID（避免多个组件实例冲突）
 const maskId = ref(`text-mask-${Math.random().toString(36).substr(2, 9)}`)
 
-// 计算背景层样式
-const overlayStyle = computed(() => {
-  const color = props.overlayColor || '#000000'
-  const opacity = props.overlayOpacity || 0.8
-  // 将颜色转换为 rgba 格式
-  const rgb = color.startsWith('#')
-    ? color.match(/[A-Za-z0-9]{2}/g)?.map(v => parseInt(v, 16)) || [0, 0, 0]
-    : [0, 0, 0]
-  return {
-    backgroundColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${opacity})`
-  }
-})
+// 渐变色配置（支持通过 props 传入或使用默认值）
+const gradientColors = computed(() => props.gradientColors)
 
 // 播放
 const handlePlay = () => {
@@ -202,14 +221,12 @@ defineExpose({
 <style lang="scss" scoped>
 .video-player-container {
   position: relative;
-  width: 100%;
-  height: 100%;
   overflow: hidden;
   background-color: #000;
 
   .video-player {
-    width: 100%;
-    height: 100%;
+    width: 100vw !important;
+    height: 100vh !important;
     object-fit: cover;
     display: block;
   }
@@ -231,7 +248,8 @@ defineExpose({
       color: #fff;
       backdrop-filter: blur(4px);
       transition: all 0.3s ease;
-      font-size: 45px;
+      font-size: 40px;
+      width: 40px;
 
       &:hover {
         background-color: rgba(0, 0, 0, 0.7);
@@ -280,6 +298,8 @@ defineExpose({
         text-transform: uppercase;
         fill: black; // mask 中黑色表示透明，白色表示不透明
         font-family: Arial, sans-serif;
+        transform-origin: 50% 50%; // 设置缩放中心点（SVG transform 的默认中心点）
+        will-change: transform; // 优化性能
 
         @media (max-width: 768px) {
           font-size: 48px;

@@ -182,6 +182,7 @@
                   :drag="false"
                   list-type="picture-card"
                   :file-list="imageFileList"
+                  :show-file-list="false"
                   upload-text="点击上传图片<br />最多10张"
                   @success="handleImageUploadSuccess"
                   @error="handleImageUploadError"
@@ -189,7 +190,11 @@
                 />
               </div>
               <div class="image-preview-list" v-if="uploadedImages.length > 0">
-                <div v-for="(img, index) in uploadedImages" :key="index" class="image-preview-item">
+                <div
+                  v-for="(img, index) in uploadedImages"
+                  :key="`uploaded-img-${index}-${img}`"
+                  class="image-preview-item"
+                >
                   <el-image
                     :src="getImageUrl(img)"
                     :preview-src-list="uploadedImages.map(i => getImageUrl(i))"
@@ -391,7 +396,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import {
   createClothing,
   findClothing,
@@ -404,6 +409,11 @@ import FileUpload from '@/components/FileUpload.vue'
 import { Search, Refresh, Delete, Edit, Plus, Picture, DataAnalysis } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ModernDialog from '@/components/ModernDialog.vue'
+import {
+  extractImageUrls,
+  extractImageUrlFromFile,
+  isValidUploadResponse
+} from '@/utils/uploadHelper'
 
 // 响应式数据
 const clothingList = ref([])
@@ -446,23 +456,30 @@ const uploading = ref(false)
 const handleImageUploadSuccess = async (response, file) => {
   uploading.value = true
   try {
-    if (response.code === 200) {
-      // 统一接口：单个文件返回 data 是单个对象，多个文件返回 data.files 数组
-      const files = response.data.files ? response.data.files : [response.data]
-      files.forEach(fileInfo => {
-        // 优先使用 url 字段（完整URL），如果没有则使用 path（现在也是完整URL）
-        const imageUrl = fileInfo.url || fileInfo.path
-        if (imageUrl && !uploadedImages.value.includes(imageUrl)) {
-          uploadedImages.value.push(imageUrl)
-        }
-      })
-      // 更新 file-list（从上传组件获取）
-      if (uploadRef.value && uploadRef.value.uploadRef) {
-        imageFileList.value = uploadRef.value.uploadRef.fileList || []
+    if (!isValidUploadResponse(response)) {
+      return
+    }
+
+    const imageUrls = extractImageUrls(response)
+    console.log(response)
+
+    // 添加到已上传列表（去重）
+    const newUrls = [...uploadedImages.value]
+    imageUrls.forEach(url => {
+      if (url && !newUrls.includes(url)) {
+        newUrls.push(url)
       }
+    })
+
+    // 使用新数组触发响应式更新
+    uploadedImages.value = newUrls
+
+    // 更新 file-list（从上传组件获取）
+    if (uploadRef.value && uploadRef.value.uploadRef) {
+      imageFileList.value = uploadRef.value.uploadRef.fileList || []
     }
   } catch (error) {
-    console.error('处理上传成功失败:', error)
+    ElMessage.error('处理上传结果失败: ' + (error.message || '未知错误'))
   } finally {
     uploading.value = false
   }
@@ -471,7 +488,6 @@ const handleImageUploadSuccess = async (response, file) => {
 // 图片上传失败
 const handleImageUploadError = (error, file) => {
   uploading.value = false
-  console.error('上传失败:', error, file)
 }
 
 // 补货对话框
@@ -700,13 +716,14 @@ const handleSubmit = async () => {
 // 移除上传组件中的图片
 const handleRemoveImage = (file, fileList) => {
   // 从已上传列表中移除
-  if (file.response && file.response.data) {
-    // 优先使用 url 字段（完整URL），如果没有则使用 path（现在也是完整URL）
-    const imageUrl =
-      file.response.data.url ||
-      file.response.data.path ||
-      (file.response.data.files && file.response.data.files[0]?.url) ||
-      (file.response.data.files && file.response.data.files[0]?.path)
+  if (file && file.response) {
+    // 尝试找到文件在列表中的索引（用于多文件上传）
+    const fileIndex = file.uid ? fileList.findIndex(f => f.uid === file.uid) : null
+
+    // 使用工具函数提取图片URL
+    const imageUrl = extractImageUrlFromFile(file, fileIndex)
+
+    // 如果找到了图片URL，从已上传列表中移除
     if (imageUrl) {
       const index = uploadedImages.value.indexOf(imageUrl)
       if (index > -1) {
@@ -714,6 +731,7 @@ const handleRemoveImage = (file, fileList) => {
       }
     }
   }
+
   // 更新 file-list
   imageFileList.value = fileList || []
 }
@@ -883,26 +901,50 @@ onMounted(() => {
     flex-wrap: wrap;
     gap: 10px;
     margin-top: 10px;
+    width: 100%;
+    min-height: 120px;
+    padding: 10px;
+    background-color: #fafafa;
+    border: 1px dashed #d9d9d9;
+    border-radius: 4px;
   }
 
   .image-preview-item {
     position: relative;
     width: 100px;
     height: 100px;
-    border: 1px solid #dcdfe6;
+    border: 2px solid #409eff;
     border-radius: 4px;
-    overflow: hidden;
+    overflow: visible;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
 
     .image-actions {
       position: absolute;
-      top: 0;
-      right: 0;
-      opacity: 0;
+      top: -8px;
+      right: -8px;
+      opacity: 1;
+      z-index: 10;
       transition: opacity 0.3s;
+      background-color: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     &:hover .image-actions {
       opacity: 1;
+    }
+
+    :deep(.el-image) {
+      width: 100%;
+      height: 100%;
+    }
+
+    :deep(.el-image__inner) {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   }
 

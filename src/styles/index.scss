@@ -1,0 +1,13 @@
+// 统一的样式入口文件
+// 所有样式文件都在这里导入，通过 vite.config.js 自动导入
+// 1. Element Plus 主题配置（必须在最前面，因为它会导入 Element Plus 的完整样式）
+@use './element/index.scss' as *;
+
+// 3. Element Plus 组件样式覆盖
+@use './element-plus.scss' as *;
+// 首先导入变量文件（所有其他文件都依赖它）
+
+@use './variables.scss' as *;
+
+// 2. 全局样式（main.scss 中的变量已通过 additionalData 自动导入，但这里通过 @use 导入时需要确保变量可用）
+@use './main.scss' as *;

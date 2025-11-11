@@ -263,7 +263,7 @@ onMounted(() => {
 .apple-header {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 18;
   background-color: rgba(255, 255, 255, 0.463);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
