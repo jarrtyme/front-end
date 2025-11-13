@@ -263,7 +263,7 @@ const goToSettings = () => {
         text-align: center;
         padding: 30px 20px;
         background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(2px);
+        backdrop-filter: saturate(180%) blur(20px);
         border-radius: 18px;
         border: 0.5px solid rgba(0, 0, 0, 0.1);
         transition:
@@ -327,7 +327,7 @@ const goToSettings = () => {
   .content-row {
     .el-card {
       background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(2px);
+      backdrop-filter: saturate(180%) blur(20px);
       border: 0.5px solid rgba(0, 0, 0, 0.1);
       border-radius: 18px;
       box-shadow: none;

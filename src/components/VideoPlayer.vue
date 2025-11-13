@@ -56,23 +56,13 @@
         @click="togglePlay"
       />
     </div>
-    <!-- GSAP 滚动动画组件 -->
-    <ScrollAnimation
-      v-if="text"
-      :container="containerRef"
-      :target="maskTextRef"
-      :enabled="true"
-      :min-scale="20"
-      :max-scale="2"
-      :end="2000"
-    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { VideoPlay, VideoPause } from '@element-plus/icons-vue'
-import ScrollAnimation from './ScrollAnimation.vue'
+import { useScrollAnimation } from '@/composables/useScrollAnimation'
 
 const props = defineProps({
   // 视频源地址
@@ -108,7 +98,7 @@ const props = defineProps({
   // 镂空文字内容
   text: {
     type: String,
-    default: '镂空文字内容'
+    default: ''
   },
   // 渐变色配置
   gradientColors: {
@@ -131,6 +121,20 @@ const maskId = ref(`text-mask-${Math.random().toString(36).substr(2, 9)}`)
 
 // 渐变色配置（支持通过 props 传入或使用默认值）
 const gradientColors = computed(() => props.gradientColors)
+
+// 使用滚动动画 hook
+const animationOptions = {
+  start: 'top top',
+  end: 2000,
+  enabled: !!props.text, // 只有当有文字时才启用动画
+  minScale: 32,
+  maxScale: 1,
+  pin: true,
+  pinSpacing: true,
+  scrub: 1
+}
+console.log('VideoPlayer 中的 animationOptions:', animationOptions)
+useScrollAnimation(containerRef, maskTextRef, animationOptions)
 
 // 播放
 const handlePlay = () => {
@@ -223,6 +227,7 @@ defineExpose({
   position: relative;
   overflow: hidden;
   background-color: #000;
+  margin-bottom: var(--gutter-width);
 
   .video-player {
     width: 100vw !important;

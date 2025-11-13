@@ -97,7 +97,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import FileUpload from '@/components/FileUpload.vue'
+import FileUpload from '@/views/home/components/FileUpload.vue'
 
 defineOptions({
   name: 'Settings'

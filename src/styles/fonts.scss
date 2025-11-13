@@ -1,0 +1,137 @@
+// 苹果字体配置
+// 使用 @font-face 声明自定义字体，确保所有设备都能显示相同的字体效果
+
+// ==================== SF Pro ====================
+// 使用用户提供的 SF-Pro.ttf 文件
+// 优先使用 TTF 格式（现代浏览器都支持）
+@font-face {
+  font-family: 'SF Pro';
+  src: url('../assets/fonts/SF-Pro.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+// ==================== SF Pro Display ====================
+// 用于大标题和展示文本（20px 及以上）
+// 使用 SF Pro 字体（如果存在单独的 Display 字体文件，可以替换）
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('../assets/fonts/SF-Pro.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src:
+    url('../assets/fonts/SF-Pro-Display-Medium.woff2') format('woff2'),
+    url('../assets/fonts/SF-Pro-Display-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src:
+    url('../assets/fonts/SF-Pro-Display-Semibold.woff2') format('woff2'),
+    url('../assets/fonts/SF-Pro-Display-Semibold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src:
+    url('../assets/fonts/SF-Pro-Display-Bold.woff2') format('woff2'),
+    url('../assets/fonts/SF-Pro-Display-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+// ==================== SF Pro Text ====================
+// 用于正文和界面文本（12-19px）
+// 使用 SF Pro 字体（如果存在单独的 Text 字体文件，可以替换）
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('../assets/fonts/SF-Pro.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src:
+    url('../assets/fonts/SF-Pro-Text-Medium.woff2') format('woff2'),
+    url('../assets/fonts/SF-Pro-Text-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src:
+    url('../assets/fonts/SF-Pro-Text-Semibold.woff2') format('woff2'),
+    url('../assets/fonts/SF-Pro-Text-Semibold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src:
+    url('../assets/fonts/SF-Pro-Text-Bold.woff2') format('woff2'),
+    url('../assets/fonts/SF-Pro-Text-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+// ==================== SF Mono ====================
+// 用于代码和等宽文本
+@font-face {
+  font-family: 'SF Mono';
+  src:
+    url('../assets/fonts/SF-Mono-Regular.woff2') format('woff2'),
+    url('../assets/fonts/SF-Mono-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Mono';
+  src:
+    url('../assets/fonts/SF-Mono-Medium.woff2') format('woff2'),
+    url('../assets/fonts/SF-Mono-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Mono';
+  src:
+    url('../assets/fonts/SF-Mono-Semibold.woff2') format('woff2'),
+    url('../assets/fonts/SF-Mono-Semibold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Mono';
+  src:
+    url('../assets/fonts/SF-Mono-Bold.woff2') format('woff2'),
+    url('../assets/fonts/SF-Mono-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

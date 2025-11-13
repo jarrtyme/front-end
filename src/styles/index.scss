@@ -9,5 +9,8 @@
 
 @use './variables.scss' as *;
 
+// 0. 字体配置（必须在其他样式之前导入，确保字体可用）
+@use './fonts.scss' as *;
+
 // 2. 全局样式（main.scss 中的变量已通过 additionalData 自动导入，但这里通过 @use 导入时需要确保变量可用）
 @use './main.scss' as *;

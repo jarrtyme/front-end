@@ -176,14 +176,14 @@
                 <FileUpload
                   ref="uploadRef"
                   file-type="image"
-                  :max-size="50"
+                  :max-size="100"
                   :max-count="10"
                   :multiple="true"
                   :drag="false"
                   list-type="picture-card"
                   :file-list="imageFileList"
                   :show-file-list="false"
-                  upload-text="点击上传图片<br />最多10张"
+                  upload-text="点击上传图片<br />最多10张，单张最大100MB"
                   @success="handleImageUploadSuccess"
                   @error="handleImageUploadError"
                   @remove="handleRemoveImage"
@@ -405,7 +405,7 @@ import {
   restockClothing,
   getClothingStats
 } from '@/api/clothing'
-import FileUpload from '@/components/FileUpload.vue'
+import FileUpload from '@/views/home/components/FileUpload.vue'
 import { Search, Refresh, Delete, Edit, Plus, Picture, DataAnalysis } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ModernDialog from '@/components/ModernDialog.vue'
@@ -460,8 +460,13 @@ const handleImageUploadSuccess = async (response, file) => {
       return
     }
 
+    // 提取所有图片URL（支持单文件和多文件上传）
     const imageUrls = extractImageUrls(response)
-    console.log(response)
+
+    if (imageUrls.length === 0) {
+      ElMessage.warning('未获取到上传的图片URL')
+      return
+    }
 
     // 添加到已上传列表（去重）
     const newUrls = [...uploadedImages.value]
@@ -471,14 +476,27 @@ const handleImageUploadSuccess = async (response, file) => {
       }
     })
 
+    // 检查是否超过最大数量限制
+    if (newUrls.length > 10) {
+      ElMessage.warning('图片数量不能超过10张，已自动截取前10张')
+      newUrls.splice(10)
+    }
+
     // 使用新数组触发响应式更新
     uploadedImages.value = newUrls
+
+    // 显示成功消息
+    const fileCount = Array.isArray(file) ? file.length : 1
+    const message =
+      response.message || (fileCount > 1 ? `成功上传 ${fileCount} 张图片` : '图片上传成功')
+    ElMessage.success(message)
 
     // 更新 file-list（从上传组件获取）
     if (uploadRef.value && uploadRef.value.uploadRef) {
       imageFileList.value = uploadRef.value.uploadRef.fileList || []
     }
   } catch (error) {
+    console.error('处理上传结果失败:', error)
     ElMessage.error('处理上传结果失败: ' + (error.message || '未知错误'))
   } finally {
     uploading.value = false
@@ -641,6 +659,13 @@ const handleCreate = () => {
   uploadedImages.value = []
   imageFileList.value = []
   dialogVisible.value = true
+
+  // 清理上传组件状态
+  nextTick(() => {
+    if (uploadRef.value && uploadRef.value.clearFiles) {
+      uploadRef.value.clearFiles()
+    }
+  })
 }
 
 // 编辑服装
@@ -669,6 +694,13 @@ const handleEdit = row => {
     : []
   imageFileList.value = []
   dialogVisible.value = true
+
+  // 清理上传组件状态（编辑时保留已有图片，但清理上传队列）
+  nextTick(() => {
+    if (uploadRef.value && uploadRef.value.clearFiles) {
+      uploadRef.value.clearFiles()
+    }
+  })
 }
 
 // 提交表单
@@ -728,7 +760,12 @@ const handleRemoveImage = (file, fileList) => {
       const index = uploadedImages.value.indexOf(imageUrl)
       if (index > -1) {
         uploadedImages.value.splice(index, 1)
+        ElMessage.success('图片已移除')
       }
+    } else {
+      // 如果无法从响应中提取URL，尝试从文件的name或其他属性匹配
+      // 这种情况比较少见，但为了健壮性还是处理一下
+      console.warn('无法从文件响应中提取图片URL，文件:', file)
     }
   }
 

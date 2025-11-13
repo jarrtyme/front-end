@@ -15,11 +15,11 @@ defineOptions({
 
 <style lang="scss" scoped>
 .header-menu {
-  backdrop-filter: blur(2px);
-  background-color: transparent;
+  backdrop-filter: saturate(180%) blur(20px);
+  background-color: rgba(250, 250, 252, 0.8);
   width: auto;
-  height: 66px;
   display: flex;
+  border-bottom: rgb(29, 29, 31);
 }
 
 .el-menu--horizontal > .el-menu-item:nth-child(1) {
@@ -31,11 +31,8 @@ defineOptions({
 // 移除 el-menu 的选中样式（全局样式，不使用 scoped）
 .header-menu {
   // 覆盖 Element Plus 的 CSS 变量
-  --el-menu-hover-bg-color: transparent;
-  --el-menu-item-hover-fill: transparent;
-  --el-menu-active-color: inherit;
-  --el-menu-bg-color: transparent;
-
+  background-color: rgba(255, 255, 255, 0.8);
+  height: var(--el-header-height-1);
   .el-menu-item {
     // 覆盖 CSS 变量
     --el-menu-hover-bg-color: transparent !important;

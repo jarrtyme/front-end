@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>字体检查工具</title>
+  <style>
+    body {
+      font-family: 'SF Pro', 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .check-item {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f5f5f7;
+      border-radius: 8px;
+    }
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .success { background: #67c23a; color: white; }
+    .error { background: #f56c6c; color: white; }
+    code {
+      background: #1d1d1f;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', Monaco, monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 字体检查工具</h1>
+  
+  <div class="check-item">
+    <h3>1. 当前字体族</h3>
+    <p id="current-font">检查中...</p>
+  </div>
+  
+  <div class="check-item">
+    <h3>2. SF Pro 字体加载状态</h3>
+    <p id="font-status">检查中...</p>
+  </div>
+  
+  <div class="check-item">
+    <h3>3. 字体文件列表</h3>
+    <ul id="font-list"></ul>
+  </div>
+  
+  <div class="check-item">
+    <h3>4. 视觉对比</h3>
+    <p style="font-size: 24px; font-weight: 600;">SF Pro Display - 大标题样式</p>
+    <p style="font-size: 16px;">SF Pro Text - 正文样式</p>
+    <p style="font-family: 'SF Mono', monospace;">SF Mono - 等宽字体样式</p>
+    <p style="font-size: 14px; color: #666;">如果你看到这些文字使用了苹果字体，说明配置成功！</p>
+  </div>
+  
+  <div class="check-item">
+    <h3>5. 测试文本</h3>
+    <p>abcdefghijklmnopqrstuvwxyz</p>
+    <p>ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+    <p>0123456789</p>
+    <p>中文测试：你好世界！</p>
+  </div>
+
+  <script>
+    // 检查当前字体
+    const currentFont = getComputedStyle(document.body).fontFamily;
+    document.getElementById('current-font').innerHTML = 
+      `<code>${currentFont}</code><br>` +
+      (currentFont.includes('SF Pro') || currentFont.includes('SF Pro Display') || currentFont.includes('SF Pro Text') 
+        ? '<span class="status success">✓ 已应用苹果字体</span>'
+        : '<span class="status error">✗ 未检测到苹果字体</span>');
+    
+    // 检查字体加载状态
+    document.fonts.ready.then(() => {
+      const sfProLoaded = document.fonts.check('16px "SF Pro"') || 
+                          document.fonts.check('16px "SF Pro Display"') ||
+                          document.fonts.check('16px "SF Pro Text"');
+      
+      document.getElementById('font-status').innerHTML = sfProLoaded
+        ? '<span class="status success">✓ SF Pro 字体已加载</span>'
+        : '<span class="status error">✗ SF Pro 字体未加载</span>';
+      
+      // 列出所有已加载的字体
+      const fontList = document.getElementById('font-list');
+      document.fonts.forEach(font => {
+        if (font.family.includes('SF')) {
+          const li = document.createElement('li');
+          li.innerHTML = `<code>${font.family}</code> - <span class="status ${font.status === 'loaded' ? 'success' : 'error'}">${font.status}</span>`;
+          fontList.appendChild(li);
+        }
+      });
+      
+      if (fontList.children.length === 0) {
+        fontList.innerHTML = '<li>未找到 SF Pro 相关字体</li>';
+      }
+    });
+    
+    // 检查 @font-face 规则
+    const fontFaces = [];
+    Array.from(document.styleSheets).forEach(sheet => {
+      try {
+        Array.from(sheet.cssRules || []).forEach(rule => {
+          if (rule.type === CSSRule.FONT_FACE_RULE) {
+            if (rule.style.fontFamily.includes('SF')) {
+              fontFaces.push({
+                family: rule.style.fontFamily,
+                src: rule.style.src
+              });
+            }
+          }
+        });
+      } catch (e) {
+        // 跨域样式表可能无法访问
+      }
+    });
+    
+    if (fontFaces.length > 0) {
+      const fontList = document.getElementById('font-list');
+      fontFaces.forEach(ff => {
+        const li = document.createElement('li');
+        li.innerHTML = `<code>${ff.family}</code> - <code>${ff.src}</code>`;
+        fontList.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>

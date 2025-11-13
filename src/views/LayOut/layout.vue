@@ -265,8 +265,8 @@ onMounted(() => {
   top: 0;
   z-index: 18;
   background-color: rgba(255, 255, 255, 0.463);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 
@@ -358,8 +358,8 @@ onMounted(() => {
 
 .dropdown-content {
   background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-radius: 12px;
   padding: 8px 0;
   min-width: 240px;
@@ -419,8 +419,8 @@ onMounted(() => {
   top: calc(100% + 12px);
   right: 0;
   background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-radius: 12px;
   padding: 8px 0;
   min-width: 200px;

@@ -48,7 +48,7 @@
           <FileUpload
             ref="fileUploadRef"
             file-type="all"
-            :max-size="50"
+            :max-size="100"
             :max-count="200"
             :multiple="true"
             :drag="false"
@@ -248,7 +248,7 @@ import {
   updateDescription
 } from '@/api/media'
 import ModernDialog from '@/components/ModernDialog.vue'
-import FileUpload from '@/components/FileUpload.vue'
+import FileUpload from '@/views/home/components/FileUpload.vue'
 
 defineOptions({
   name: 'FileManager'
@@ -430,8 +430,19 @@ const handleFileSuccess = async (response, file) => {
     if (response && typeof response === 'object') {
       // 检查是否有 code 属性
       if (response.code === 200) {
-        ElMessage.success('文件上传成功!')
-        // 不再自动刷新文件列表
+        // 多文件上传时，file 可能是数组，response.message 会包含文件数量
+        const fileCount = Array.isArray(file) ? file.length : 1
+        const message =
+          response.message || (fileCount > 1 ? `成功上传 ${fileCount} 个文件!` : '文件上传成功!')
+        ElMessage.success(message)
+
+        // 上传成功后自动刷新文件列表
+        await loadFileList()
+
+        // 清空上传组件的文件列表，避免达到限制后无法继续上传
+        if (fileUploadRef.value && fileUploadRef.value.clearFiles) {
+          fileUploadRef.value.clearFiles()
+        }
       } else {
         // 处理错误响应
         const errorMessage = response?.message || response?.error || '上传失败'
@@ -442,6 +453,7 @@ const handleFileSuccess = async (response, file) => {
       ElMessage.error('上传失败：响应格式不正确')
     }
   } catch (error) {
+    console.error('处理上传结果时发生错误:', error)
     ElMessage.error('处理上传结果时发生错误: ' + (error.message || '未知错误'))
   }
 }
