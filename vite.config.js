@@ -4,7 +4,10 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { fileURLToPath, URL } from 'node:url'
-import ElementPlus from 'unplugin-element-plus/vite'
+// 注意：已移除 unplugin-element-plus 插件
+// 因为样式已通过 SCSS 手动导入（在 src/styles/element/index.scss 中）
+// 使用该插件可能会导致样式冲突，覆盖自定义主题
+// import ElementPlus from 'unplugin-element-plus/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,22 +17,30 @@ export default defineConfig({
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia'],
       dirs: ['src/stores'],
-      resolvers: [ElementPlusResolver()],
-      dts: true,
+      resolvers: [
+        ElementPlusResolver({
+          // 自动导入 Element Plus 的 API（如 ElMessage, ElMessageBox, ElNotification 等）
+          importStyle: false // 样式已通过 SCSS 导入，不需要自动导入样式
+        })
+      ],
+      dts: true, // 生成类型定义文件
       eslintrc: {
-        enabled: true
+        enabled: true, // 生成 ESLint 配置文件
+        filepath: './.eslintrc-auto-import.json' // ESLint 配置文件路径
       }
     }),
     Components({
       resolvers: [
         ElementPlusResolver({
-          importStyle: false
+          importStyle: false // 样式已通过 SCSS 导入，不需要自动导入样式
         })
       ]
-    }),
-    ElementPlus({
-      useSource: true
     })
+    // 已移除 ElementPlus 插件，因为样式已通过 SCSS 手动导入
+    // 这样可以避免样式冲突，确保自定义主题生效
+    // ElementPlus({
+    //   useSource: true
+    // })
   ],
   resolve: {
     alias: {
@@ -39,6 +50,9 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
+        // 通过 additionalData 自动导入项目变量
+        // 这样所有 SCSS 文件在编译时都会自动包含项目变量
+        // 注意：Element Plus 变量覆盖在 element/index.scss 中单独导入，避免重复执行
         additionalData: `@use "@/styles/variables.scss" as *;`,
         api: 'modern-compiler',
         silenceDeprecations: ['legacy-js-api', 'import']

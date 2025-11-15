@@ -24,11 +24,9 @@
         <slot>
           <div v-for="(item, index) in items" :key="`${copyIndex}-${index}`" class="carousel-item">
             <slot name="item" :item="item" :index="index">
-              <div
-                v-if="item.url"
-                class="default-item"
-                :style="{ backgroundImage: `url(${item.url})` }"
-              ></div>
+              <div v-if="item.url" class="default-item">
+                <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
+              </div>
               <div v-else class="default-item-text">{{ item }}</div>
             </slot>
           </div>
@@ -380,9 +378,16 @@ defineExpose({
 .default-item {
   width: 200px;
   height: 150px;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  overflow: hidden;
+  position: relative;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
 }
 
 .default-item-text {

@@ -1,6 +1,8 @@
-// 注意：Element Plus 基础样式已通过 styles/index.scss 自动导入
-// 变量已通过 vite.config.js 的 additionalData 自动导入（在 .vue 文件中）
-// 但通过 @use 导入此文件时，需要显式导入变量
+// ==================== 全局样式文件 ====================
+// 包含：CSS 重置、工具类、响应式 mixin、动画等
+//
+// 注意：此文件通过 @use 导入，不会自动获得 vite.config.js 的 additionalData
+// 因此需要显式导入 variables.scss 才能使用项目变量
 
 @use './variables.scss' as *;
 @use 'sass:color';
@@ -10,7 +12,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: $font-family-base;
 }
 
 *::before,
@@ -20,16 +21,14 @@
 
 // ==================== HTML & Body ====================
 html {
-  font-family: $font-family-base;
-  font-size: 16px;
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
   height: 100%;
+  font-size: $font-size-md;
+  font-family: $font-family-base;
 }
 
 body {
-  font-family: $font-family-base;
-  font-size: $font-size-md;
   line-height: 1.5;
   color: $text-color;
   background-color: $bg-color-page;
@@ -42,35 +41,23 @@ body {
 
 // ==================== CSS 自定义属性（CSS Variables） ====================
 :root {
-  // 字体族（确保所有元素都能使用苹果字体）
-  --font-family-base: #{$font-family-base};
-  --font-family-apple: #{$font-family-apple};
-  --font-family-mono: #{$font-family-mono};
-
   // 内容高度
   --content-height: 580px;
 
   // 网格布局相关
   --columns: 2;
   --gutter-width: 12px;
-  --gutter-half-width: 6px;
-  --gutter-and-half-width: 18px;
-  --gutter-color: #fff;
 
   // 边框相关
   --edge-border-width: 12px;
-  --edge-border-width-fallback: 12px;
   --double-edge-border-width: 24px;
 
   // 颜色相关
-  --background-color: #f5f5f7;
   --text-color: #1d1d1f;
 
   // 安全区域（用于移动端适配，如 iPhone 的刘海屏）
   --safe-area-inset-lt: env(safe-area-inset-left, 0px);
   --safe-area-inset-rt: env(safe-area-inset-right, 0px);
-  --safe-area-inset-top: env(safe-area-inset-top, 0px);
-  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 // ==================== 应用容器 ====================
@@ -488,27 +475,6 @@ pre {
   }
 }
 
-// 小于指定断点
-@mixin media-max($breakpoint) {
-  @media (max-width: #{$breakpoint - 1px}) {
-    @content;
-  }
-}
-
-// 大于等于指定断点
-@mixin media-min($breakpoint) {
-  @media (min-width: $breakpoint) {
-    @content;
-  }
-}
-
-// 在指定范围内
-@mixin media-between($min, $max) {
-  @media (min-width: $min) and (max-width: #{$max - 1px}) {
-    @content;
-  }
-}
-
 // 响应式 CSS 变量调整
 @include media-xs {
   :root {
@@ -516,18 +482,9 @@ pre {
     --content-height: 400px;
     --columns: 1; // 移动端单列
     --gutter-width: 8px;
-    --gutter-half-width: 4px;
-    --gutter-and-half-width: 12px;
-    --gutter-color: #{$bg-color-page};
     --edge-border-width: 8px;
-    --edge-border-width-fallback: 8px;
     --double-edge-border-width: 16px;
-    --background-color: #{$bg-color-page};
     --text-color: #{$text-color};
-  }
-
-  .hidden-xs {
-    display: none !important;
   }
 }
 
@@ -537,18 +494,9 @@ pre {
     --content-height: 480px;
     --columns: 2; // 平板端两列
     --gutter-width: 10px;
-    --gutter-half-width: 5px;
-    --gutter-and-half-width: 15px;
-    --gutter-color: #fff;
     --edge-border-width: 10px;
-    --edge-border-width-fallback: 10px;
     --double-edge-border-width: 20px;
-    --background-color: #f5f5f7;
     --text-color: #1d1d1f;
-  }
-
-  .hidden-sm {
-    display: none !important;
   }
 }
 
@@ -558,18 +506,9 @@ pre {
     --content-height: 540px;
     --columns: 2; // 小桌面两列
     --gutter-width: 12px;
-    --gutter-half-width: 6px;
-    --gutter-and-half-width: 18px;
-    --gutter-color: #fff;
     --edge-border-width: 12px;
-    --edge-border-width-fallback: 12px;
     --double-edge-border-width: 24px;
-    --background-color: #f5f5f7;
     --text-color: #1d1d1f;
-  }
-
-  .hidden-md {
-    display: none !important;
   }
 }
 
@@ -579,18 +518,9 @@ pre {
     --content-height: 580px;
     --columns: 2; // 大桌面两列
     --gutter-width: 12px;
-    --gutter-half-width: 6px;
-    --gutter-and-half-width: 18px;
-    --gutter-color: #fff;
     --edge-border-width: 12px;
-    --edge-border-width-fallback: 12px;
     --double-edge-border-width: 24px;
-    --background-color: #f5f5f7;
     --text-color: #1d1d1f;
-  }
-
-  .hidden-lg {
-    display: none !important;
   }
 }
 
@@ -600,13 +530,8 @@ pre {
     --content-height: 620px;
     --columns: 2;
     --gutter-width: 16px;
-    --gutter-half-width: 8px;
-    --gutter-and-half-width: 24px;
-    --gutter-color: #fff;
     --edge-border-width: 16px;
-    --edge-border-width-fallback: 16px;
     --double-edge-border-width: 32px;
-    --background-color: #f5f5f7;
     --text-color: #1d1d1f;
   }
 }

@@ -15,8 +15,10 @@
       type=""
       height="200px"
       :autoplay="!isDragging"
-      arrow="never"
+      arrow="always"
       indicator-position="none"
+      :loop="false"
+      @change="handleCarouselChange"
     >
       <el-carousel-item v-for="item in items" :key="item.id || item">
         <h3 v-if="typeof item === 'number'" text="2xl" justify="center">{{ item }}</h3>
@@ -28,22 +30,11 @@
         </div>
       </el-carousel-item>
     </el-carousel>
-
-    <!-- 自定义箭头按钮 -->
-    <div class="custom-arrows">
-      <el-icon class="arrow left-arrow" @click="prevSlide">
-        <ArrowLeft />
-      </el-icon>
-      <el-icon class="arrow right-arrow" @click="nextSlide">
-        <ArrowRight />
-      </el-icon>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import { ref } from 'vue'
 
 const props = defineProps({
   // 轮播图数据，可以是数字数组、图片URL数组或对象数组
@@ -53,35 +44,24 @@ const props = defineProps({
   }
 })
 
-const windowWidth = ref(window.innerWidth)
 const carouselRef = ref(null)
+const currentIndex = ref(0)
 
 // 触摸滑动相关
 const touchStartX = ref(0)
-const touchStartY = ref(0)
 const touchEndX = ref(0)
-const touchEndY = ref(0)
 const isDragging = ref(false)
 const startX = ref(0)
 
-const updateWindowWidth = () => {
-  windowWidth.value = window.innerWidth
-}
-
-// 箭头切换方法
-const prevSlide = () => {
-  carouselRef.value?.prev()
-}
-
-const nextSlide = () => {
-  carouselRef.value?.next()
+// 监听轮播图切换事件
+const handleCarouselChange = index => {
+  currentIndex.value = index
 }
 
 // 触摸事件处理
 const handleTouchStart = e => {
   const touch = e.touches[0]
   touchStartX.value = touch.clientX
-  touchStartY.value = touch.clientY
   isDragging.value = true
 }
 
@@ -89,35 +69,53 @@ const handleTouchMove = e => {
   if (!isDragging.value) return
   const touch = e.touches[0]
   touchEndX.value = touch.clientX
-  touchEndY.value = touch.clientY
 }
 
 const handleTouchEnd = () => {
   if (!isDragging.value) return
 
   const deltaX = touchEndX.value - touchStartX.value
-  const deltaY = touchEndY.value - touchStartY.value
 
-  // 判断是否为水平滑动（水平距离大于垂直距离）
-  if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+  // 判断是否为水平滑动（水平距离大于50px）
+  if (Math.abs(deltaX) > 50) {
     if (deltaX > 0) {
-      // 向右滑动，显示上一张
-      prevSlide()
+      // 向右滑动，显示上一张 - 不循环
+      if (carouselRef.value && props.items.length > 0 && currentIndex.value > 0) {
+        const prevIndex = currentIndex.value - 1
+        if (typeof carouselRef.value.setActiveItem === 'function') {
+          carouselRef.value.setActiveItem(prevIndex)
+        } else if (typeof carouselRef.value.prev === 'function') {
+          carouselRef.value.prev()
+        }
+      }
     } else {
-      // 向左滑动，显示下一张
-      nextSlide()
+      // 向左滑动，显示下一张 - 不循环
+      if (
+        carouselRef.value &&
+        props.items.length > 0 &&
+        currentIndex.value < props.items.length - 1
+      ) {
+        const nextIndex = currentIndex.value + 1
+        if (typeof carouselRef.value.setActiveItem === 'function') {
+          carouselRef.value.setActiveItem(nextIndex)
+        } else if (typeof carouselRef.value.next === 'function') {
+          carouselRef.value.next()
+        }
+      }
     }
   }
 
   isDragging.value = false
   touchStartX.value = 0
-  touchStartY.value = 0
   touchEndX.value = 0
-  touchEndY.value = 0
 }
 
 // 鼠标拖拽事件处理（桌面端）
 const handleMouseDown = e => {
+  // 如果点击的是箭头按钮，不触发拖拽
+  if (e.target.closest('.el-carousel__arrow')) {
+    return
+  }
   isDragging.value = true
   startX.value = e.clientX
   e.preventDefault()
@@ -125,7 +123,6 @@ const handleMouseDown = e => {
 
 const handleMouseMove = e => {
   if (!isDragging.value) return
-  e.preventDefault()
 }
 
 const handleMouseUp = e => {
@@ -135,25 +132,35 @@ const handleMouseUp = e => {
 
   if (Math.abs(deltaX) > 50) {
     if (deltaX > 0) {
-      // 向右拖拽，显示上一张
-      prevSlide()
+      // 向右拖拽，显示上一张 - 不循环
+      if (carouselRef.value && props.items.length > 0 && currentIndex.value > 0) {
+        const prevIndex = currentIndex.value - 1
+        if (typeof carouselRef.value.setActiveItem === 'function') {
+          carouselRef.value.setActiveItem(prevIndex)
+        } else if (typeof carouselRef.value.prev === 'function') {
+          carouselRef.value.prev()
+        }
+      }
     } else {
-      // 向左拖拽，显示下一张
-      nextSlide()
+      // 向左拖拽，显示下一张 - 不循环
+      if (
+        carouselRef.value &&
+        props.items.length > 0 &&
+        currentIndex.value < props.items.length - 1
+      ) {
+        const nextIndex = currentIndex.value + 1
+        if (typeof carouselRef.value.setActiveItem === 'function') {
+          carouselRef.value.setActiveItem(nextIndex)
+        } else if (typeof carouselRef.value.next === 'function') {
+          carouselRef.value.next()
+        }
+      }
     }
   }
 
   isDragging.value = false
   startX.value = 0
 }
-
-onMounted(() => {
-  window.addEventListener('resize', updateWindowWidth)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateWindowWidth)
-})
 </script>
 
 <style scoped>
@@ -206,53 +213,61 @@ onUnmounted(() => {
   background-color: #d3dce6;
 }
 
-/* 自定义箭头样式 */
-.custom-arrows {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  display: flex;
-  gap: 12px;
-  z-index: 10;
+/* 自定义 Element Plus 默认箭头样式 - 确保始终显示 */
+:deep(.el-carousel__arrow) {
+  width: 40px !important;
+  height: 40px !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.3s ease;
+  z-index: 10 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
-.arrow {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+:deep(.el-carousel__arrow:hover) {
+  background-color: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transform: scale(1.1) !important;
+}
+
+:deep(.el-carousel__arrow:active) {
+  transform: scale(1.1) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+:deep(.el-carousel__arrow--left) {
+  left: 16px !important;
+}
+
+:deep(.el-carousel__arrow--right) {
+  right: 16px !important;
+}
+
+/* 确保箭头图标可见 */
+:deep(.el-carousel__arrow .el-icon) {
   font-size: 20px;
   color: #475669;
 }
 
-.arrow:hover {
-  background-color: rgba(255, 255, 255, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  transform: scale(1.1);
-}
-
-.arrow:active {
-  transform: scale(0.95);
-}
-
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .custom-arrows {
-    bottom: 12px;
-    right: 12px;
-    gap: 10px;
-  }
-
-  .arrow {
+  :deep(.el-carousel__arrow) {
     width: 36px;
     height: 36px;
-    font-size: 18px;
+  }
+
+  :deep(.el-carousel__arrow--left) {
+    left: 12px;
+  }
+
+  :deep(.el-carousel__arrow--right) {
+    right: 12px;
   }
 }
 </style>

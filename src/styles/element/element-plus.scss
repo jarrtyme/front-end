@@ -1,0 +1,94 @@
+// ==================== Element Plus 组件样式覆盖 ====================
+// 覆盖 Element Plus 组件的默认样式（如 header、footer、menu 等）
+//
+// 注意：
+// - 主题色配置已通过 element/index.scss 使用 SCSS 变量方式配置
+// - 此文件只包含组件级别的样式覆盖
+// - 此文件通过 @use 导入，需要显式导入 variables.scss
+
+// <!--
+// 响应式宽度计算公式参考：
+
+// 1. 基础响应式容器宽度（最小 320px，最大 1260px）
+//    width: min(max(87.5vw, 320px), 1260px);
+//    用途：用于容器元素，在移动端和桌面端之间平滑过渡
+
+// 2. 轮播图单个项目宽度（占容器 50%，减去间距后计算）
+//    width: calc((min(max(87.5vw, 280px), 1260px) - 20px) * 0.5);
+//    用途：用于轮播图组件，每屏显示 2 个项目，每个项目占 50% 宽度
+
+// 3. 带最大限制的响应式宽度（减去间距后不超过 420px）
+//    width: calc(min(max(87.5vw, 280px) - 20px, 420px));
+//    用途：用于需要固定最大宽度的元素，如卡片、按钮组等
+//  -->
+
+// 导入变量文件（通过 @use 导入时需要显式导入）
+@use '../variables.scss' as *;
+
+:root {
+  // Element Plus 字体配置（使用苹果字体）
+  --el-font-family: #{$font-family-base};
+  // Element Plus 圆角配置（使用项目的 $border-radius）
+  // 注意：由于 $border-radius-base 没有使用 !default，无法通过 SCSS 变量覆盖
+  // 因此使用 CSS 自定义属性来覆盖
+  --el-border-radius-base: #{$border-radius};
+  --el-box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+  --el-dialog-box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+}
+
+// Element Plus 在组件样式中定义了变量（如 --el-header-padding: 0 20px;）
+// 这些变量在组件作用域内，优先级比 :root 高
+// 我们需要在组件上直接覆盖这些变量
+
+.el-header {
+  // 在组件上重新定义变量，覆盖 Element Plus 组件中的变量定义
+  --el-header-padding: 0px;
+  --el-header-bg-color: rgba(255, 255, 255, 0.8);
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 19;
+}
+
+.el-main {
+  --el-main-padding: 0px;
+  --el-main-bg-color: var(--el-bg-color-page);
+}
+
+.el-footer {
+  max-width: 1920px;
+  margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: saturate(180%) blur(20px);
+  --el-footer-padding: 0 20px;
+  --el-footer-height: 60px;
+  --el-footer-bg-color: var(--el-bg-color);
+}
+.el-menu {
+  background-color: transparent;
+  backdrop-filter: saturate(180%) blur(20px);
+}
+.el-menu--horizontal.el-menu {
+  border-bottom: initial;
+}
+
+// ==================== 暗色主题（可选） ====================
+// 如果需要暗色主题，可以取消注释并配置
+// html.dark {
+//   --el-bg-color-page: #2a2626ce;
+//   --el-text-color-primary: #e5eaf3;
+//   --el-text-color-regular: #cfd3dc;
+//   --el-text-color-secondary: #a3a6ad;
+//   --el-text-color-placeholder: #6c6e72;
+//   --el-border-color: #4c4d4f;
+//   --el-border-color-light: #414243;
+//   --el-border-color-lighter: #363637;
+//   --el-fill-color: #303133;
+//   --el-fill-color-light: #262727;
+//   --el-fill-color-lighter: #1d1d1d;
+//   --el-fill-color-extra-light: #131313;
+//   --el-fill-color-blank: transparent;
+//   --el-bg-color: #25282b;
+//   --el-bg-color-page: #0a0a0a;
+//   --el-bg-color-overlay: #1d1e1f;
+// }

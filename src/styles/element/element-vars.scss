@@ -1,0 +1,42 @@
+// ==================== Element Plus 变量覆盖 ====================
+// 定义 Element Plus 主题变量并转发覆盖默认变量
+//
+// 注意：此文件通过 @use 导入，不会自动获得 vite.config.js 的 additionalData
+// 因此需要显式导入 variables.scss 才能使用项目变量
+
+@use '../variables.scss' as *;
+
+// 定义 Element Plus 主题色变量
+// 使用项目中的颜色变量，确保主题一致性
+$--colors: (
+  'primary': (
+    'base': $primary-color
+  ),
+  'success': (
+    'base': $success-color
+  ),
+  'warning': (
+    'base': $warning-color
+  ),
+  'danger': (
+    'base': $danger-color
+  ),
+  'error': (
+    'base': $danger-color
+  ),
+  'info': (
+    'base': $info-color
+  )
+);
+
+// 使用 @forward 转发变量覆盖，确保在全局范围内生效
+// 这样当任何文件导入 element-plus/theme-chalk/src/common/var.scss 时，都会使用我们覆盖的变量
+// 注意：只有使用 !default 声明的变量才能通过 with 覆盖
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  // 覆盖颜色变量
+  $colors: $--colors,
+  // 注意：$border-radius-base 没有使用 !default，无法在这里覆盖
+  // 圆角变量需要在 element-plus.scss 中通过 CSS 自定义属性覆盖
+  // 可以在这里覆盖其他使用 !default 的变量，例如：
+   // $button-padding-horizontal: ('default': 50px),
+);

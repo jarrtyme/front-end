@@ -1,16 +1,27 @@
-// 统一的样式入口文件
-// 所有样式文件都在这里导入，通过 vite.config.js 自动导入
-// 1. Element Plus 主题配置（必须在最前面，因为它会导入 Element Plus 的完整样式）
+// ==================== 样式入口文件 ====================
+// 所有全局样式文件都在这里统一导入
+//
+// 注意：variables.scss 已通过 vite.config.js 的 additionalData 自动导入
+// 所以作为入口文件的 index.scss 不需要显式导入 variables.scss
+// 但通过 @use 导入的其他文件（如 main.scss）需要显式导入 variables.scss
+//
+// 导入顺序说明：
+// 1. 字体配置（必须在其他样式之前导入，确保字体可用）
+// 2. Element Plus 主题配置（导入 Element Plus 的完整样式和变量覆盖）
+// 3. Element Plus 组件样式覆盖（覆盖 Element Plus 组件的默认样式）
+// 4. 全局样式（CSS 重置、工具类、动画等）
+
+// 1. 字体配置
+@use './fonts.scss' as *;
+
+// 2. Element Plus 主题配置
+// 包含：变量覆盖（element-vars.scss）和完整样式导入
 @use './element/index.scss' as *;
 
 // 3. Element Plus 组件样式覆盖
-@use './element-plus.scss' as *;
-// 首先导入变量文件（所有其他文件都依赖它）
+// 覆盖 Element Plus 组件的默认样式（如 header、footer、menu 等）
+@use './element/element-plus.scss' as *;
 
-@use './variables.scss' as *;
-
-// 0. 字体配置（必须在其他样式之前导入，确保字体可用）
-@use './fonts.scss' as *;
-
-// 2. 全局样式（main.scss 中的变量已通过 additionalData 自动导入，但这里通过 @use 导入时需要确保变量可用）
+// 4. 全局样式
+// 包含：CSS 重置、工具类、响应式 mixin、动画等
 @use './main.scss' as *;

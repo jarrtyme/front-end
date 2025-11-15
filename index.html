@@ -1,10 +1,19 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>官网项目</title>
+    <!-- 字体预加载：优化字体加载性能 -->
+    <!-- 注意：Vite 会自动处理资源路径，开发环境使用 /src/，生产环境会自动优化 -->
+    <link
+      rel="preload"
+      href="/src/assets/fonts/SF-Pro.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
   </head>
   <body>
     <div id="app"></div>

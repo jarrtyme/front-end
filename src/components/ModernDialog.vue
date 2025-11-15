@@ -7,6 +7,7 @@
     :show-close="false"
     :before-close="handleBeforeClose"
     class="modern-dialog"
+    draggable
     @close="handleClose"
   >
     <!-- 标题区域 -->
@@ -180,8 +181,9 @@ const handleConfirm = () => {
     border-radius: 24px;
     overflow: hidden;
     box-shadow:
-      0 20px 60px rgba(0, 0, 0, 0.3),
-      0 0 0 1px rgba(0, 0, 0, 0.05);
+      0 25px 80px rgba(0, 0, 0, 0.35),
+      0 10px 30px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(0, 0, 0, 0.08) !important;
 
     .el-dialog__header {
       padding: 0;
@@ -250,7 +252,7 @@ const handleConfirm = () => {
   // 遮罩层阴影效果
   .el-overlay {
     background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(20px);
   }
 }
 
@@ -272,7 +274,7 @@ const handleConfirm = () => {
     }
 
     .header-title {
-      font-size: 28px;
+      font-size: 22px;
       font-weight: 600;
       color: #1d1d1f;
       line-height: 1.2;
@@ -283,23 +285,23 @@ const handleConfirm = () => {
     position: absolute;
     top: 10px;
     right: 10px;
-    width: 32px;
-    height: 32px;
+    width: 37px;
+    height: 37px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--el-fill-color-light, #f5f7fa);
+    background-color: var(--el-fill-color-light, #101010);
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    color: var(--el-text-color-regular, #606266);
+    color: var(--el-text-color-regular, #27282b);
     transition: all 0.2s ease;
     flex-shrink: 0;
 
     &:hover {
       background-color: var(--el-fill-color, #f0f2f5);
       color: var(--el-text-color-primary, #303133);
-      transform: scale(1.1);
+      transform: scale(1.08);
     }
 
     &:active {
@@ -307,8 +309,8 @@ const handleConfirm = () => {
     }
 
     svg {
-      width: 16px;
-      height: 16px;
+      width: 27px;
+      height: 27px;
     }
   }
 }
@@ -372,7 +374,7 @@ const handleConfirm = () => {
 
     .header-content {
       .header-title {
-        font-size: 24px;
+        font-size: 16px;
       }
     }
 

@@ -405,7 +405,7 @@ import {
   restockClothing,
   getClothingStats
 } from '@/api/clothing'
-import FileUpload from '@/views/home/components/FileUpload.vue'
+import FileUpload from '@/components/FileUpload.vue'
 import { Search, Refresh, Delete, Edit, Plus, Picture, DataAnalysis } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ModernDialog from '@/components/ModernDialog.vue'
@@ -616,8 +616,9 @@ const loadClothingList = async () => {
       limit: pageSize.value
     })
     if (response.code === 200 && response.data) {
-      clothingList.value = response.data || []
-      total.value = response.data.length || 0
+      // 适配新的响应格式：{ list: [...], pagination: {...} }
+      clothingList.value = response.data.list || response.data || []
+      total.value = response.data.pagination?.total || response.data.length || 0
       ElMessage.success('服装列表加载成功')
     } else {
       ElMessage.error(response.message || '获取服装列表失败')

@@ -1,4 +1,5 @@
 // 封装请求工具，支持 HTTP 和 HTTPS
+import logger from './logger'
 
 const BASE_URL = import.meta.env.VITE_API_PREFIX || '/api'
 
@@ -64,7 +65,7 @@ function isTokenExpiringSoon(token, thresholdSeconds = 3600) {
     // 如果剩余时间小于阈值，则认为即将过期
     return expiresIn > 0 && expiresIn < thresholdSeconds
   } catch (error) {
-    console.error('解析 token 失败:', error)
+    logger.error('解析 token 失败:', error)
     return false
   }
 }
@@ -121,7 +122,7 @@ async function requestWithRetry(url, config, retryCount = 0) {
     const newToken = response.headers.get('X-New-Token')
     if (newToken) {
       updateToken(newToken)
-      console.log('Token 已自动刷新')
+      logger.info('Token 已自动刷新')
     }
 
     // 尝试解析响应（无论成功与否）
@@ -191,11 +192,11 @@ async function requestWithRetry(url, config, retryCount = 0) {
     // 如果是协议问题，尝试切换协议（最多重试一次）
     if (retryCount === 0 && /^https?:\/\//i.test(url) && error.name !== 'TypeError') {
       const alternateUrl = url.replace(/^https:/i, 'http:').replace(/^http:/i, 'https:')
-      console.warn(`请求失败，尝试切换协议: ${url} -> ${alternateUrl}`)
+      logger.warn(`请求失败，尝试切换协议: ${url} -> ${alternateUrl}`)
       return requestWithRetry(alternateUrl, config, retryCount + 1)
     }
 
-    console.error('Request failed:', error)
+    logger.error('Request failed:', error)
     throw error
   }
 }
@@ -204,10 +205,14 @@ async function requestWithRetry(url, config, retryCount = 0) {
  * 通用请求方法
  * @param {string} url - 请求地址（支持相对路径和绝对路径）
  * @param {object} options - 请求配置
+ * @param {string} options.method - 请求方法
+ * @param {any} options.data - 请求数据（支持对象、FormData等）
+ * @param {object} options.headers - 请求头
+ * @param {boolean} options.isFormData - 是否为 FormData 请求（自动检测，也可手动指定）
  * @returns {Promise}
  */
 export function request(url, options = {}) {
-  const { method = 'GET', data, headers = {}, ...rest } = options
+  const { method = 'GET', data, headers = {}, isFormData, ...rest } = options
 
   // 自动添加 Authorization header
   let token = getToken()
@@ -223,10 +228,14 @@ export function request(url, options = {}) {
     authHeaders['Authorization'] = `Bearer ${token}`
   }
 
+  // 检测是否为 FormData
+  const isFormDataRequest = isFormData !== undefined ? isFormData : data instanceof FormData
+
   const config = {
     method,
     headers: {
-      'Content-Type': 'application/json',
+      // FormData 请求不设置 Content-Type，让浏览器自动设置 boundary
+      ...(isFormDataRequest ? {} : { 'Content-Type': 'application/json' }),
       ...authHeaders,
       ...headers
     },
@@ -240,8 +249,14 @@ export function request(url, options = {}) {
       const params = new URLSearchParams(data).toString()
       url = `${url}?${params}`
     } else {
-      // POST/PUT/DELETE 请求将参数放在 body
-      config.body = JSON.stringify(data)
+      // POST/PUT/DELETE 请求
+      if (isFormDataRequest) {
+        // FormData 直接使用
+        config.body = data
+      } else {
+        // 其他情况序列化为 JSON
+        config.body = JSON.stringify(data)
+      }
     }
   }
 
@@ -286,10 +301,10 @@ async function refreshTokenSilently() {
       const newToken = response.headers.get('X-New-Token')
       if (newToken) {
         updateToken(newToken)
-        console.log('Token 已静默刷新')
+        logger.info('Token 已静默刷新')
       }
     } catch (error) {
-      console.error('刷新 token 失败:', error)
+      logger.error('刷新 token 失败:', error)
       // 刷新失败不抛出错误，让主请求继续执行
     } finally {
       isRefreshing = false
@@ -339,6 +354,22 @@ export function put(url, data, options = {}) {
 export function del(url, options = {}) {
   return request(url, {
     method: 'DELETE',
+    ...options
+  })
+}
+
+/**
+ * 文件上传请求（支持 FormData）
+ * @param {string} url - 请求地址
+ * @param {FormData} formData - FormData 对象
+ * @param {object} options - 额外配置
+ * @returns {Promise}
+ */
+export function upload(url, formData, options = {}) {
+  return request(url, {
+    method: 'POST',
+    data: formData,
+    isFormData: true,
     ...options
   })
 }

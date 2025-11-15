@@ -1,7 +1,7 @@
 <template>
-  <template v-for="item in items">
-    <div class="bigner-item" :style="{ backgroundImage: `url(${item.url})` }"></div>
-  </template>
+  <div v-for="(item, index) in items" :key="item.id || item.url || index" class="bigner-item">
+    <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
+  </div>
 </template>
 
 <script setup>
@@ -17,9 +17,15 @@ const props = defineProps({
 .bigner-item {
   height: var(--content-height);
   width: 100%;
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
   margin-bottom: var(--gutter-width);
+  overflow: hidden;
+  position: relative;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
 }
 </style>

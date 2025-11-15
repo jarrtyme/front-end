@@ -10,7 +10,9 @@
           class="scroll-snap-item"
         >
           <slot name="item" :item="item" :index="index">
-            <div class="default-item" :style="{ backgroundImage: `url(${item.url})` }"></div>
+            <div class="default-item">
+              <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
+            </div>
           </slot>
         </div>
       </div>
@@ -272,10 +274,17 @@ const scrollToNext = () => {
 .default-item {
   height: v-bind('height + "px"');
   width: v-bind('itemWidthStyle');
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
+  overflow: hidden;
+  position: relative;
   border-radius: 8px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
 }
 
 /* 箭头样式 */

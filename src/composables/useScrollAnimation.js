@@ -34,22 +34,6 @@ export function useScrollAnimation(container, target, options = {}) {
   // ScrollTrigger 实例
   let scrollTriggerInstance = null
 
-  // 移除 ScrollTrigger pin 时添加的宽度限制
-  const removeWidthRestriction = containerElement => {
-    if (pin.value && containerElement) {
-      // ScrollTrigger 会在容器外创建 pin-spacer 包装器
-      const pinSpacer = containerElement.closest('.pin-spacer')
-      if (pinSpacer) {
-        pinSpacer.style.maxWidth = 'none'
-        pinSpacer.style.width = 'auto'
-      }
-      // 也检查容器本身
-      if (containerElement.style.maxWidth) {
-        containerElement.style.maxWidth = 'none'
-      }
-    }
-  }
-
   // 初始化滚动动画
   const initScrollAnimation = () => {
     if (!enabled.value) return
@@ -129,40 +113,8 @@ export function useScrollAnimation(container, target, options = {}) {
       onLeaveBack: () => {
         // 反向离开时时间线会自动处理
       },
-      onRefresh: () => {
-        // 刷新时移除宽度限制
-        removeWidthRestriction(containerElement)
-        // 刷新时根据当前进度设置正确的状态
-        const currentProgress = scrollTriggerInstance.progress
-        if (currentProgress === 0) {
-          // 还没有进入触发区域，设置为动画起始值
-          gsap.set(targetElement, { scale: startScale, transformOrigin: 'center center' })
-        } else {
-          // 已经在触发区域内，根据当前进度设置正确的值
-          tl.progress(currentProgress)
-        }
-      }
+      onRefresh: () => {}
     })
-
-    // 确保 ScrollTrigger 初始化后，设置正确的状态
-    setTimeout(() => {
-      const currentProgress = scrollTriggerInstance.progress
-      if (currentProgress === 0) {
-        // 还没有进入触发区域，确保设置为动画起始值
-        gsap.set(targetElement, { scale: startScale, transformOrigin: 'center center' })
-        tl.progress(0)
-      } else {
-        // 已经在触发区域内，根据当前进度设置正确的值
-        tl.progress(currentProgress)
-      }
-    }, 0)
-
-    // 立即移除宽度限制
-    setTimeout(() => {
-      removeWidthRestriction(containerElement)
-      // 触发一次 refresh 确保样式生效
-      ScrollTrigger.refresh()
-    }, 0)
   }
 
   // 清理动画
@@ -200,8 +152,8 @@ export function useScrollAnimation(container, target, options = {}) {
       setTimeout(() => {
         initScrollAnimation()
         const targetElement = target?.value || target
-        console.log(minScale.value)
-        gsap.set(targetElement, { scale: minScale.value, transformOrigin: 'center center' })
+        if (targetElement)
+          gsap.set(targetElement, { scale: minScale.value, transformOrigin: 'center center' })
         // 窗口大小改变时重新计算
         window.addEventListener('resize', initScrollAnimation)
       })

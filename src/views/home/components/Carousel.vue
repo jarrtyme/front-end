@@ -18,8 +18,10 @@
       arrow="never"
       indicator-position="none"
     >
-      <el-carousel-item v-for="item in items" :key="item">
-        <div class="default-item" :style="{ backgroundImage: `url(${item.url})` }"></div>
+      <el-carousel-item v-for="(item, index) in items" :key="item.id || item.url || index">
+        <div class="default-item">
+          <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
+        </div>
       </el-carousel-item>
     </el-carousel>
   </div>
@@ -151,8 +153,15 @@ onUnmounted(() => {
 .default-item {
   height: var(--content-height);
   width: 100%;
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
+  overflow: hidden;
+  position: relative;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
 }
 </style>
