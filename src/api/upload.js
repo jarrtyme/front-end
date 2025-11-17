@@ -2,7 +2,7 @@
 import { post, upload } from '@/utils/request'
 
 /**
- * 获取文件列表（所有文件类型，无需鉴权）
+ * 获取文件列表（所有文件类型，需要鉴权）
  * @param {Object} params - 查询参数
  * @param {number} params.page - 页码（默认1）
  * @param {number} params.limit - 每页数量（默认10，最大100）

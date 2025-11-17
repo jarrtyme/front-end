@@ -1,5 +1,5 @@
 // 页面管理相关 API
-import { post, get } from '@/utils/request'
+import { post } from '@/utils/request'
 
 /**
  * 创建页面
@@ -76,12 +76,7 @@ export function deletePages(ids) {
  * @returns {Promise}
  */
 export function getPublicPageList(params = {}) {
-  const queryParams = new URLSearchParams()
-  if (params.page) queryParams.append('page', params.page)
-  if (params.limit) queryParams.append('limit', params.limit)
-  if (params.name) queryParams.append('name', params.name)
-
-  return get(`/page/public/list?${queryParams.toString()}`)
+  return post('/page/public/list', params)
 }
 
 /**
@@ -90,5 +85,5 @@ export function getPublicPageList(params = {}) {
  * @returns {Promise}
  */
 export function getPublicPageById(id) {
-  return get(`/page/public/${id}`)
+  return post('/page/public/findById', { id })
 }

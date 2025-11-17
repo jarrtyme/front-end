@@ -65,3 +65,12 @@ export function deletePageComponent(id) {
 export function deletePageComponents(ids) {
   return post('/page-component/remove', { ids })
 }
+
+/**
+ * 根据ID数组查询已启用的页面组件（公开访问，无需鉴权）
+ * @param {Array<string>} ids - 组件ID数组
+ * @returns {Promise}
+ */
+export function getPublicPageComponentsByIds(ids) {
+  return post('/page-component/public/findByIds', { ids })
+}

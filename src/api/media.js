@@ -17,7 +17,7 @@ export function createMedia(data) {
 }
 
 /**
- * 获取媒体列表（无需鉴权）
+ * 获取媒体列表（需要鉴权）
  * @param {Object} params - 查询参数
  * @param {number} params.page - 页码（默认1）
  * @param {number} params.limit - 每页数量（默认10，最大100）

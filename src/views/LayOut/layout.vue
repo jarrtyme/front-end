@@ -225,7 +225,7 @@ const handleUserMenuLeave = () => {
 
 // 处理个人中心
 const handleProfile = () => {
-  ElMessage.info('个人中心功能开发中...')
+  router.push('/admin/profile')
   showUserDropdown.value = false
 }
 

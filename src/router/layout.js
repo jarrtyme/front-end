@@ -75,6 +75,15 @@ const layoutRoutes = [
           title: '系统设置',
           requiresAuth: true
         }
+      },
+      {
+        path: 'profile',
+        name: 'AdminProfile',
+        component: () => import('@/views/LayOut/pages/profile/Profile.vue'),
+        meta: {
+          title: '个人中心',
+          requiresAuth: true
+        }
       }
     ]
   }

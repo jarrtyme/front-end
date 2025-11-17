@@ -40,3 +40,25 @@ export function getUserInfo() {
 export function verifyToken() {
   return post('/auth/verify')
 }
+
+/**
+ * 更新用户信息
+ * @param {Object} data - 更新数据
+ * @param {string} data.username - 用户名（可选）
+ * @param {string} data.email - 邮箱（可选）
+ * @returns {Promise}
+ */
+export function updateUserInfo(data) {
+  return post('/auth/update', data)
+}
+
+/**
+ * 修改密码
+ * @param {Object} data - 密码数据
+ * @param {string} data.oldPassword - 旧密码
+ * @param {string} data.newPassword - 新密码（至少6个字符）
+ * @returns {Promise}
+ */
+export function changePassword(data) {
+  return post('/auth/change-password', data)
+}

@@ -56,45 +56,50 @@ const items = ref({
 })
 
 const getFileListAll = async () => {
-  const [res1, res2, res3, res4, res5, res6] = await Promise.all([
-    getFileList({
-      page: 1,
-      limit: 10,
-      description: '1'
-    }),
-    getFileList({
-      page: 1,
-      limit: 10,
-      description: '2'
-    }),
-    getFileList({
-      page: 1,
-      limit: 10,
-      description: '3'
-    }),
-    getFileList({
-      page: 1,
-      limit: 3,
-      description: '1'
-    }),
-    getFileList({
-      page: 1,
-      limit: 3,
-      description: '2'
-    }),
-    getFileList({
-      page: 1,
-      limit: 10,
-      description: '3'
-    })
-  ])
+  try {
+    const [res1, res2, res3, res4, res5, res6] = await Promise.all([
+      getFileList({
+        page: 1,
+        limit: 10,
+        description: '1'
+      }),
+      getFileList({
+        page: 1,
+        limit: 10,
+        description: '2'
+      }),
+      getFileList({
+        page: 1,
+        limit: 10,
+        description: '3'
+      }),
+      getFileList({
+        page: 1,
+        limit: 3,
+        description: '1'
+      }),
+      getFileList({
+        page: 1,
+        limit: 3,
+        description: '2'
+      }),
+      getFileList({
+        page: 1,
+        limit: 10,
+        description: '3'
+      })
+    ])
 
-  items.value.items1 = res1.data.files
-  items.value.items2 = res2.data.files
-  items.value.items3 = res3.data.files
-  items.value.items4 = res4.data.files
-  items.value.items5 = res5.data.files
-  items.value.items6 = res6.data.files
+    items.value.items1 = res1?.data?.files || res1?.data?.list || []
+    items.value.items2 = res2?.data?.files || res2?.data?.list || []
+    items.value.items3 = res3?.data?.files || res3?.data?.list || []
+    items.value.items4 = res4?.data?.files || res4?.data?.list || []
+    items.value.items5 = res5?.data?.files || res5?.data?.list || []
+    items.value.items6 = res6?.data?.files || res6?.data?.list || []
+  } catch (error) {
+    console.error('加载文件列表失败:', error)
+    // 静默失败，不显示错误提示，因为Home页面是公开页面，可能未登录
+  }
 }
 
 onMounted(() => {
