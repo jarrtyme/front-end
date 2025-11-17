@@ -41,6 +41,24 @@ const layoutRoutes = [
         }
       },
       {
+        path: 'page-components',
+        name: 'AdminPageComponents',
+        component: () => import('@/views/LayOut/pages/management/PageComponentManagement.vue'),
+        meta: {
+          title: '组件管理',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'pages',
+        name: 'AdminPages',
+        component: () => import('@/views/LayOut/pages/management/PageManagement.vue'),
+        meta: {
+          title: '页面管理',
+          requiresAuth: true
+        }
+      },
+      {
         path: 'upload',
         name: 'AdminUpload',
         component: () => import('@/views/LayOut/pages/tools/Upload.vue'),

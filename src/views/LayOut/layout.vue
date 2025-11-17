@@ -137,6 +137,18 @@ const menuItems = ref([
         label: '服装管理',
         path: '/admin/clothing',
         description: '管理服装信息和库存'
+      },
+      {
+        key: 'page-components',
+        label: '组件管理',
+        path: '/admin/page-components',
+        description: '管理页面组件，包含媒体和描述'
+      },
+      {
+        key: 'pages',
+        label: '页面管理',
+        path: '/admin/pages',
+        description: '管理页面配置，组合多个组件'
       }
     ]
   },

@@ -414,6 +414,11 @@ const handleAddToMediaLibrary = async row => {
 
 // 打开描述管理对话框
 const handleOpenDescriptionDialog = row => {
+  // 添加空值检查
+  if (!row) {
+    ElMessage.warning('文件信息不存在')
+    return
+  }
   if (!row.isAddedToLibrary || !row.mediaId) {
     ElMessage.warning('请先将文件添加到媒体库')
     return
@@ -437,17 +442,25 @@ const handleDescriptionDialogClose = () => {
 
 // 确认保存描述
 const confirmSaveDescriptions = async descriptions => {
-  // 从事件参数获取描述数据
-  const validDescriptions = descriptions.filter(desc => desc.text.trim())
-  if (validDescriptions.length === 0) {
-    ElMessage.warning('至少需要保留一条描述')
+  // 添加空值检查
+  if (!currentFile.value || !currentFile.value.mediaId) {
+    ElMessage.error('文件信息不存在，无法保存描述')
     return
   }
+
+  // 从事件参数获取描述数据，过滤空描述
+  const validDescriptions = descriptions.filter(desc => desc.text && desc.text.trim())
 
   descriptionLoading.value = true
   try {
     const originalDescriptions = getMediaDescriptions(currentFile.value) || []
-    const originalDescMap = new Map(originalDescriptions.map(desc => [desc._id?.toString(), desc]))
+    // 统一处理 ID 类型转换：确保 _id 转换为字符串进行比较
+    const originalDescMap = new Map(
+      originalDescriptions.map(desc => {
+        const id = desc._id ? (typeof desc._id === 'string' ? desc._id : desc._id.toString()) : null
+        return [id, desc]
+      })
+    )
 
     const toAdd = []
     const toUpdate = []
@@ -455,20 +468,31 @@ const confirmSaveDescriptions = async descriptions => {
 
     validDescriptions.forEach(desc => {
       if (desc._id) {
-        const original = originalDescMap.get(desc._id.toString())
+        // 统一处理 ID 类型转换
+        const descId = typeof desc._id === 'string' ? desc._id : desc._id.toString()
+        const original = originalDescMap.get(descId)
         if (original && original.text !== desc.text.trim()) {
           toUpdate.push({ id: desc._id, text: desc.text.trim() })
         }
-        originalDescMap.delete(desc._id.toString())
+        originalDescMap.delete(descId)
       } else {
         toAdd.push(desc.text.trim())
       }
     })
 
+    // 剩余的原始描述需要删除
     originalDescMap.forEach(desc => {
       toDelete.push(desc._id)
     })
 
+    // 如果没有需要执行的操作，直接返回
+    if (toAdd.length === 0 && toUpdate.length === 0 && toDelete.length === 0) {
+      ElMessage.info('描述未发生变化')
+      handleDescriptionDialogClose()
+      return
+    }
+
+    // 使用 Promise.allSettled 处理部分失败的情况
     const promises = []
     toAdd.forEach(text => {
       promises.push(addDescription(currentFile.value.mediaId, text))
@@ -480,14 +504,37 @@ const confirmSaveDescriptions = async descriptions => {
       promises.push(removeDescription(currentFile.value.mediaId, descId))
     })
 
-    await Promise.all(promises)
+    const results = await Promise.allSettled(promises)
 
-    ElMessage.success('描述保存成功!')
+    // 检查结果，统计成功和失败的数量
+    const successCount = results.filter(r => r.status === 'fulfilled').length
+    const failCount = results.filter(r => r.status === 'rejected').length
+
+    if (failCount === 0) {
+      ElMessage.success('描述保存成功!')
+    } else if (successCount > 0) {
+      ElMessage.warning(`部分操作成功（${successCount} 个成功，${failCount} 个失败）`)
+      // 记录失败的详细信息
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          logger.error(`描述操作失败 [${index}]:`, result.reason)
+        }
+      })
+    } else {
+      // 所有操作都失败
+      const errorMessages = results
+        .filter(r => r.status === 'rejected')
+        .map(r => r.reason?.message || '未知错误')
+      logger.error('保存描述失败:', errorMessages)
+      ElMessage.error(`保存描述失败: ${errorMessages[0] || '未知错误'}`)
+      return // 如果全部失败，不关闭对话框，让用户重试
+    }
+
     handleDescriptionDialogClose()
     await loadFileList()
   } catch (error) {
     logger.error('保存描述失败:', error)
-    ElMessage.error('保存描述失败')
+    ElMessage.error(error.message || '保存描述失败')
   } finally {
     descriptionLoading.value = false
   }
@@ -870,16 +917,39 @@ const confirmBatchAddDescription = async descriptions => {
       const data = response.data
       const successCount = data.successCount || 0
       const failCount = data.failCount || 0
+      const errors = data.errors || []
 
       if (successCount > 0) {
-        ElMessage.success(
-          `成功为 ${successCount} 个文件添加描述${failCount > 0 ? `，${failCount} 个失败` : ''}`
-        )
+        if (failCount > 0) {
+          // 部分成功，显示警告并记录详细错误
+          ElMessage.warning(`成功为 ${successCount} 个文件添加描述，${failCount} 个失败`)
+          if (errors.length > 0) {
+            logger.error('批量添加描述部分失败:', errors)
+            // 显示前3个错误信息
+            const errorPreview = errors
+              .slice(0, 3)
+              .map(e => e.error || '未知错误')
+              .join('; ')
+            if (errors.length > 3) {
+              ElMessage.info(`部分错误: ${errorPreview}... (共 ${errors.length} 个错误)`)
+            } else {
+              ElMessage.info(`错误详情: ${errorPreview}`)
+            }
+          }
+        } else {
+          ElMessage.success(`成功为 ${successCount} 个文件添加描述`)
+        }
         handleBatchDescriptionDialogClose()
         selectedFiles.value = []
         await loadFileList()
       } else {
-        ElMessage.error('批量添加描述失败')
+        // 全部失败
+        const errorMessage =
+          errors.length > 0 ? errors[0].error || '批量添加描述失败' : '批量添加描述失败'
+        ElMessage.error(errorMessage)
+        if (errors.length > 1) {
+          logger.error('批量添加描述失败:', errors)
+        }
       }
     } else {
       ElMessage.error(response.message || '批量添加描述失败')

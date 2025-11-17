@@ -174,16 +174,21 @@ const handleConfirm = () => {
   emit('confirm')
 }
 </script>
+<style>
+.el-overlay-dialog {
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.35),
+    0 10px 30px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(0, 0, 0, 0.08) !important;
 
+  backdrop-filter: blur(20px);
+}
+</style>
 <style lang="scss" scoped>
 :deep(.modern-dialog) {
   .el-dialog {
     border-radius: 24px;
     overflow: hidden;
-    box-shadow:
-      0 25px 80px rgba(0, 0, 0, 0.35),
-      0 10px 30px rgba(0, 0, 0, 0.2),
-      0 0 0 1px rgba(0, 0, 0, 0.08) !important;
 
     .el-dialog__header {
       padding: 0;
