@@ -9,8 +9,6 @@
             :key="menu.key"
             class="nav-item"
             :class="{ active: activeMenu === menu.key }"
-            @mouseenter="handleMenuEnter(menu.key)"
-            @mouseleave="handleMenuLeave(menu.key)"
           >
             <span class="nav-link" @click="handleMenuClick(menu)">{{ menu.label }}</span>
 
@@ -19,8 +17,7 @@
               v-if="menu.children && menu.children.length > 0"
               class="dropdown-menu"
               :class="{ show: activeDropdown === menu.key }"
-              @mouseenter="handleMenuEnter(menu.key)"
-              @mouseleave="handleMenuLeave(menu.key)"
+              @click.stop
             >
               <div class="dropdown-content">
                 <div
@@ -44,22 +41,13 @@
 
         <!-- 右侧用户信息 -->
         <div class="nav-right">
-          <div
-            class="user-menu"
-            @mouseenter="handleUserMenuEnter"
-            @mouseleave="handleUserMenuLeave"
-          >
-            <div class="user-avatar">
+          <div class="user-menu">
+            <div class="user-avatar" @click.stop="toggleUserMenu">
               <el-avatar :size="28" :src="userStore.userInfo?.avatar">
                 {{ userStore.userName?.charAt(0) || 'U' }}
               </el-avatar>
             </div>
-            <div
-              class="user-dropdown"
-              :class="{ show: showUserDropdown }"
-              @mouseenter="handleUserMenuEnter"
-              @mouseleave="handleUserMenuLeave"
-            >
+            <div class="user-dropdown" :class="{ show: showUserDropdown }" @click.stop>
               <div class="user-info">
                 <div class="user-name">{{ userStore.userName || '管理员' }}</div>
                 <div class="user-email">{{ userStore.userInfo?.email || '' }}</div>
@@ -83,6 +71,8 @@
         </div>
       </nav>
     </header>
+
+    <div v-if="isOverlayVisible" class="dropdown-overlay" @click="closeAllDropdowns"></div>
 
     <!-- 主内容区域 -->
     <main class="apple-main">
@@ -112,6 +102,10 @@ const isScrolled = ref(false)
 // 激活的下拉菜单
 const activeDropdown = ref('')
 const showUserDropdown = ref(false)
+
+const isOverlayVisible = computed(() => {
+  return activeDropdown.value !== '' || showUserDropdown.value
+})
 
 // 菜单项配置
 const menuItems = ref([
@@ -184,55 +178,54 @@ const activeMenu = computed(() => {
   return ''
 })
 
-// 处理菜单鼠标进入
-const handleMenuEnter = key => {
-  activeDropdown.value = key
+const toggleDropdown = key => {
+  if (activeDropdown.value === key) {
+    activeDropdown.value = ''
+  } else {
+    activeDropdown.value = key
+    showUserDropdown.value = false
+  }
 }
 
-// 处理菜单鼠标离开
-const handleMenuLeave = key => {
-  setTimeout(() => {
-    if (activeDropdown.value === key) {
-      activeDropdown.value = ''
-    }
-  }, 100)
+const closeAllDropdowns = () => {
+  activeDropdown.value = ''
+  showUserDropdown.value = false
 }
 
-// 处理菜单点击（无子菜单时直接跳转）
+// 处理菜单点击
 const handleMenuClick = menu => {
   if (!menu.children || menu.children.length === 0) {
     router.push(menu.path)
-    activeDropdown.value = ''
+    closeAllDropdowns()
+  } else {
+    toggleDropdown(menu.key)
   }
 }
 
 // 处理子菜单点击
 const handleSubMenuClick = child => {
   router.push(child.path)
-  activeDropdown.value = ''
+  closeAllDropdowns()
 }
 
 // 处理用户菜单
-const handleUserMenuEnter = () => {
-  showUserDropdown.value = true
-}
-
-const handleUserMenuLeave = () => {
-  setTimeout(() => {
-    showUserDropdown.value = false
-  }, 100)
+const toggleUserMenu = () => {
+  showUserDropdown.value = !showUserDropdown.value
+  if (showUserDropdown.value) {
+    activeDropdown.value = ''
+  }
 }
 
 // 处理个人中心
 const handleProfile = () => {
   router.push('/admin/profile')
-  showUserDropdown.value = false
+  closeAllDropdowns()
 }
 
 // 处理设置
 const handleSettings = () => {
   router.push('/admin/settings')
-  showUserDropdown.value = false
+  closeAllDropdowns()
 }
 
 // 退出登录
@@ -250,7 +243,7 @@ const handleLogout = async () => {
   } catch (error) {
     // 用户取消操作
   } finally {
-    showUserDropdown.value = false
+    closeAllDropdowns()
   }
 }
 
@@ -359,7 +352,7 @@ onMounted(() => {
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: top center;
-
+  z-index: 99999;
   &.show {
     opacity: 1;
     visibility: visible;
@@ -495,6 +488,17 @@ onMounted(() => {
   .el-icon {
     font-size: 16px;
   }
+}
+
+.dropdown-overlay {
+  position: fixed;
+  top: 44px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(2px);
+  z-index: 10;
 }
 
 .apple-main {

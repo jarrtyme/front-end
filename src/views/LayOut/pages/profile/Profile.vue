@@ -17,6 +17,27 @@
             label-width="120px"
             style="max-width: 600px"
           >
+            <el-form-item label="头像">
+              <div class="avatar-upload-container">
+                <div class="avatar-uploader" @click="triggerFileInput">
+                  <input
+                    ref="fileInputRef"
+                    type="file"
+                    accept="image/*"
+                    style="display: none"
+                    :disabled="infoLoading"
+                    @change="handleFileChange"
+                  />
+                  <div class="avatar-trigger">
+                    <img v-if="userInfo.avatar" :src="userInfo.avatar" class="avatar" />
+                    <div v-else class="avatar-placeholder">
+                      <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
+                    </div>
+                  </div>
+                </div>
+                <div class="avatar-tip">点击上传头像，支持裁剪和旋转</div>
+              </div>
+            </el-form-item>
             <el-form-item label="用户名" prop="username">
               <el-input
                 v-model="userInfo.username"
@@ -99,14 +120,26 @@
         </el-tab-pane>
       </el-tabs>
     </el-card>
+
+    <!-- 头像裁剪对话框 -->
+    <AvatarCropper
+      v-model="cropperVisible"
+      :image-src="cropperImageSrc"
+      @crop="handleAvatarCrop"
+      @close="handleCropperClose"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import { getUserInfo, updateUserInfo, changePassword } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
+import AvatarCropper from '@/components/AvatarCropper.vue'
+import { uploadFiles } from '@/api/upload'
+import { log } from '@/utils/logger'
 
 defineOptions({
   name: 'Profile'
@@ -119,9 +152,14 @@ const infoFormRef = ref(null)
 const passwordFormRef = ref(null)
 const infoLoading = ref(false)
 const passwordLoading = ref(false)
+const fileInputRef = ref(null)
+const cropperVisible = ref(false)
+const cropperImageSrc = ref('')
+const selectedFile = ref(null)
 
 // 用户信息表单
 const userInfo = reactive({
+  avatar: '',
   username: '',
   email: '',
   role: '',
@@ -192,6 +230,7 @@ const loadUserInfo = async () => {
     if (response.code === 200 && response.data) {
       const user = response.data.user || response.data
       const userData = {
+        avatar: user.avatar || '',
         username: user.username || '',
         email: user.email || '',
         role: user.role === 'admin' ? '管理员' : '普通用户',
@@ -222,7 +261,8 @@ const handleUpdateInfo = async () => {
 
     const updateData = {
       username: userInfo.username,
-      email: userInfo.email
+      email: userInfo.email,
+      avatar: userInfo.avatar
     }
 
     const response = await updateUserInfo(updateData)
@@ -302,6 +342,101 @@ const handleResetPassword = () => {
   passwordFormRef.value?.clearValidate()
 }
 
+// 触发文件选择
+const triggerFileInput = () => {
+  if (infoLoading.value) return
+  fileInputRef.value?.click()
+}
+
+// 处理文件选择
+const handleFileChange = event => {
+  const file = event.target.files?.[0]
+  if (!file) return
+
+  // 验证文件类型
+  const isImage = file.type.startsWith('image/')
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件!')
+    // 清空 input
+    if (fileInputRef.value) {
+      fileInputRef.value.value = ''
+    }
+    return
+  }
+
+  // 验证文件大小（5MB）
+  const isLt5M = file.size / 1024 / 1024 < 5
+  if (!isLt5M) {
+    ElMessage.error('图片大小不能超过 5MB!')
+    // 清空 input
+    if (fileInputRef.value) {
+      fileInputRef.value.value = ''
+    }
+    return
+  }
+
+  // 保存文件并打开裁剪对话框
+  selectedFile.value = file
+  const reader = new FileReader()
+  reader.onload = e => {
+    cropperImageSrc.value = e.target.result
+    cropperVisible.value = true
+  }
+  reader.onerror = () => {
+    ElMessage.error('读取文件失败')
+    if (fileInputRef.value) {
+      fileInputRef.value.value = ''
+    }
+  }
+  reader.readAsDataURL(file)
+}
+
+// 处理头像裁剪完成
+const handleAvatarCrop = async cropData => {
+  try {
+    infoLoading.value = true
+
+    // 上传裁剪后的图片
+    const response = await uploadFiles([cropData.file])
+
+    if (response && response.code === 200) {
+      const fileData = response.data.files ? response.data.files[0] : response.data
+      if (fileData) {
+        userInfo.avatar = fileData.url || fileData.path
+        ElMessage.success('头像上传成功')
+        // 自动保存头像
+        await handleUpdateInfo()
+      }
+    } else {
+      ElMessage.error(response?.message || '头像上传失败')
+    }
+  } catch (error) {
+    console.error('头像上传失败:', error)
+    ElMessage.error(error.message || '头像上传失败')
+  } finally {
+    infoLoading.value = false
+    // 清理预览 URL
+    if (cropData.previewUrl) {
+      URL.revokeObjectURL(cropData.previewUrl)
+    }
+  }
+}
+
+// 关闭裁剪对话框
+const handleCropperClose = () => {
+  // 清理预览 URL
+  if (cropperImageSrc.value && cropperImageSrc.value.startsWith('blob:')) {
+    URL.revokeObjectURL(cropperImageSrc.value)
+  }
+  cropperVisible.value = false
+  cropperImageSrc.value = ''
+  selectedFile.value = null
+  // 清空文件输入
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
+}
+
 // 初始化加载
 onMounted(() => {
   loadUserInfo()
@@ -313,6 +448,65 @@ onMounted(() => {
   .card-header {
     font-weight: 600;
     font-size: 16px;
+  }
+
+  .avatar-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    .avatar-uploader {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+
+      .avatar-trigger {
+        width: 100px;
+        height: 100px;
+        border: 1px dashed var(--el-border-color);
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: var(--el-transition-duration-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--el-fill-color-lighter);
+
+        &:hover {
+          border-color: var(--el-color-primary);
+          background-color: var(--el-fill-color-light);
+        }
+      }
+
+      .avatar {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .avatar-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
+      }
+    }
+
+    .avatar-tip {
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      margin-top: 4px;
+    }
   }
 }
 </style>
