@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { login as loginApi } from '@/api/auth'
+import { getMyMenuPermissions } from '@/api/menuPermission'
 
 export const useUserStore = defineStore('user', {
   state: () => {
@@ -15,14 +16,26 @@ export const useUserStore = defineStore('user', {
     return {
       token,
       userInfo,
-      rememberMe
+      rememberMe,
+      menuPermissions: [] // 菜单权限列表
     }
   },
 
   getters: {
     isLoggedIn: state => !!state.token,
     userName: state => state.userInfo?.username || '',
-    userId: state => state.userInfo?.id || ''
+    userId: state => state.userInfo?.id || '',
+    userRole: state => state.userInfo?.role || 'user',
+    userVipLevel: state => state.userInfo?.vipLevel || 0,
+    hasMenuPermission: state => {
+      return menuKey => {
+        // 如果没有菜单权限列表，返回false
+        if (!state.menuPermissions || state.menuPermissions.length === 0) {
+          return false
+        }
+        return state.menuPermissions.includes(menuKey)
+      }
+    }
   },
 
   actions: {
@@ -62,6 +75,11 @@ export const useUserStore = defineStore('user', {
           // 不记住我：存储在 sessionStorage（会话级）
           sessionStorage.setItem('userInfo', userInfoStr)
         }
+      }
+
+      // 如果用户信息更新，重新加载菜单权限
+      if (userInfo) {
+        this.loadMenuPermissions()
       }
     },
 
@@ -136,12 +154,38 @@ export const useUserStore = defineStore('user', {
       this.token = ''
       this.userInfo = null
       this.rememberMe = false
+      this.menuPermissions = []
 
       // 清除所有存储位置
       localStorage.removeItem('token')
       localStorage.removeItem('userInfo')
       sessionStorage.removeItem('token')
       sessionStorage.removeItem('userInfo')
+    },
+
+    // 加载菜单权限
+    async loadMenuPermissions() {
+      try {
+        if (!this.token) {
+          this.menuPermissions = []
+          return
+        }
+
+        const response = await getMyMenuPermissions()
+        if (response.code === 200 && response.data) {
+          this.menuPermissions = response.data.menuPermissions || []
+        } else {
+          this.menuPermissions = []
+        }
+      } catch (error) {
+        console.error('加载菜单权限失败:', error)
+        this.menuPermissions = []
+      }
+    },
+
+    // 设置菜单权限
+    setMenuPermissions(menuPermissions) {
+      this.menuPermissions = menuPermissions || []
     }
   }
 })

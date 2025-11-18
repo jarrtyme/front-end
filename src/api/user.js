@@ -41,11 +41,32 @@ export function updateUserStatus(userId, isActive) {
  * @param {string} data.username - 用户名
  * @param {string} data.email - 邮箱
  * @param {string} data.role - 角色
+ * @param {number} data.vipLevel - VIP等级
  * @param {boolean} data.isActive - 是否激活
  * @returns {Promise}
  */
 export function updateUser(userId, data) {
   return post(`/auth/users/${userId}/update`, data)
+}
+
+/**
+ * 更新用户VIP等级（管理员）
+ * @param {string} userId - 用户ID
+ * @param {number} vipLevel - VIP等级
+ * @returns {Promise}
+ */
+export function updateUserVipLevel(userId, vipLevel) {
+  return post(`/menu-permission/user/${userId}/vip-level`, { vipLevel })
+}
+
+/**
+ * 更新用户菜单权限（管理员）
+ * @param {string} userId - 用户ID
+ * @param {Array<string>} menuPermissions - 菜单权限列表
+ * @returns {Promise}
+ */
+export function updateUserMenuPermissions(userId, menuPermissions) {
+  return post(`/menu-permission/user/${userId}`, { menuPermissions })
 }
 
 /**

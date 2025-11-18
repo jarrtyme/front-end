@@ -35,11 +35,35 @@
         </el-table-column>
         <el-table-column prop="username" label="用户名" width="150" />
         <el-table-column prop="email" label="邮箱" width="200" />
-        <el-table-column prop="role" label="角色" width="100">
+        <el-table-column prop="role" label="角色" width="120">
           <template #default="{ row }">
-            <el-tag :type="row.role === 'admin' ? 'danger' : 'primary'">
-              {{ row.role === 'admin' ? '管理员' : '普通用户' }}
+            <el-tag
+              :type="
+                row.role === 'super_admin'
+                  ? 'danger'
+                  : row.role === 'admin'
+                    ? 'warning'
+                    : row.role === 'vip'
+                      ? 'success'
+                      : 'info'
+              "
+            >
+              {{
+                row.role === 'super_admin'
+                  ? '超级管理员'
+                  : row.role === 'admin'
+                    ? '管理员'
+                    : row.role === 'vip'
+                      ? `VIP${row.vipLevel || ''}`
+                      : '普通用户'
+              }}
             </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="vipLevel" label="VIP等级" width="100" v-if="showVipColumn">
+          <template #default="{ row }">
+            <span v-if="row.role === 'vip' && row.vipLevel">{{ row.vipLevel }}</span>
+            <span v-else>-</span>
           </template>
         </el-table-column>
         <el-table-column prop="isActive" label="状态" width="100">
@@ -96,8 +120,23 @@
         <el-form-item label="角色" prop="role">
           <el-select v-model="editForm.role" placeholder="请选择角色" style="width: 100%">
             <el-option label="普通用户" value="user" />
+            <el-option label="VIP用户" value="vip" />
             <el-option label="管理员" value="admin" />
+            <el-option
+              v-if="userStore.userRole === 'super_admin'"
+              label="超级管理员"
+              value="super_admin"
+            />
           </el-select>
+        </el-form-item>
+        <el-form-item v-if="editForm.role === 'vip'" label="VIP等级" prop="vipLevel">
+          <el-input-number
+            v-model="editForm.vipLevel"
+            :min="0"
+            :max="10"
+            placeholder="VIP等级 (0-10)"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="状态" prop="isActive">
           <el-switch v-model="editForm.isActive" active-text="启用" inactive-text="禁用" />
@@ -132,7 +171,15 @@ const editForm = ref({
   username: '',
   email: '',
   role: 'user',
+  vipLevel: 0,
   isActive: true
+})
+
+const userStore = useUserStore()
+
+// 检查是否需要显示VIP列
+const showVipColumn = computed(() => {
+  return userList.value.some(user => user.role === 'vip')
 })
 
 // 表单验证规则
@@ -204,6 +251,7 @@ const handleEdit = row => {
     username: row.username || '',
     email: row.email || '',
     role: row.role || 'user',
+    vipLevel: row.vipLevel || 0,
     isActive: row.isActive !== false
   }
   editDialogVisible.value = true
@@ -216,6 +264,7 @@ const handleDialogClose = () => {
     username: '',
     email: '',
     role: 'user',
+    vipLevel: 0,
     isActive: true
   }
 }

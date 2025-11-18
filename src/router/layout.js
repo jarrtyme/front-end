@@ -19,7 +19,8 @@ const layoutRoutes = [
         component: () => import('@/views/LayOut/pages/dashboard/Dashboard.vue'),
         meta: {
           title: '仪表盘',
-          requiresAuth: true
+          requiresAuth: true,
+          menuKey: 'dashboard'
         }
       },
       {
@@ -28,7 +29,8 @@ const layoutRoutes = [
         component: () => import('@/views/LayOut/pages/management/Users.vue'),
         meta: {
           title: '用户管理',
-          requiresAuth: true
+          requiresAuth: true,
+          menuKey: 'users'
         }
       },
       {
@@ -37,7 +39,8 @@ const layoutRoutes = [
         component: () => import('@/views/LayOut/pages/management/ClotherMangement.vue'),
         meta: {
           title: '服装管理',
-          requiresAuth: true
+          requiresAuth: true,
+          menuKey: 'clothing'
         }
       },
       {
@@ -46,7 +49,8 @@ const layoutRoutes = [
         component: () => import('@/views/LayOut/pages/management/PageComponentManagement.vue'),
         meta: {
           title: '组件管理',
-          requiresAuth: true
+          requiresAuth: true,
+          menuKey: 'page-components'
         }
       },
       {
@@ -55,7 +59,8 @@ const layoutRoutes = [
         component: () => import('@/views/LayOut/pages/management/PageManagement.vue'),
         meta: {
           title: '页面管理',
-          requiresAuth: true
+          requiresAuth: true,
+          menuKey: 'pages'
         }
       },
       {
@@ -64,7 +69,8 @@ const layoutRoutes = [
         component: () => import('@/views/LayOut/pages/tools/Upload.vue'),
         meta: {
           title: '文件管理',
-          requiresAuth: true
+          requiresAuth: true,
+          menuKey: 'upload'
         }
       },
       {
@@ -73,7 +79,8 @@ const layoutRoutes = [
         component: () => import('@/views/LayOut/pages/settings/Settings.vue'),
         meta: {
           title: '系统设置',
-          requiresAuth: true
+          requiresAuth: true,
+          menuKey: 'settings'
         }
       },
       {

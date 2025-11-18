@@ -125,7 +125,9 @@
                 style="width: 100%"
               >
                 <el-option label="普通用户" value="user" />
+                <el-option label="VIP用户" value="vip" />
                 <el-option label="管理员" value="admin" />
+                <!-- 注意：super_admin 不能通过注册创建 -->
               </el-select>
             </el-form-item>
 

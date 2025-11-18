@@ -107,8 +107,8 @@ const isOverlayVisible = computed(() => {
   return activeDropdown.value !== '' || showUserDropdown.value
 })
 
-// 菜单项配置
-const menuItems = ref([
+// 所有菜单项配置（完整列表）
+const allMenuItems = [
   {
     key: 'dashboard',
     label: '仪表盘',
@@ -165,7 +165,40 @@ const menuItems = ref([
     path: '/admin/settings',
     children: []
   }
-])
+]
+
+// 根据权限过滤后的菜单项
+const menuItems = computed(() => {
+  return allMenuItems
+    .map(menu => {
+      // 检查主菜单是否有权限
+      if (!userStore.hasMenuPermission(menu.key)) {
+        return null
+      }
+
+      // 如果有子菜单，过滤子菜单
+      if (menu.children && menu.children.length > 0) {
+        const filteredChildren = menu.children.filter(child =>
+          userStore.hasMenuPermission(child.key)
+        )
+
+        // 如果过滤后没有子菜单，返回null
+        if (filteredChildren.length === 0) {
+          return null
+        }
+
+        // 返回过滤后的菜单项
+        return {
+          ...menu,
+          children: filteredChildren
+        }
+      }
+
+      // 没有子菜单，直接返回
+      return menu
+    })
+    .filter(menu => menu !== null)
+})
 
 // 当前激活的菜单
 const activeMenu = computed(() => {
@@ -256,6 +289,11 @@ onMounted(() => {
   onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll)
   })
+
+  // 加载菜单权限
+  if (userStore.isLoggedIn) {
+    userStore.loadMenuPermissions()
+  }
 })
 </script>
 

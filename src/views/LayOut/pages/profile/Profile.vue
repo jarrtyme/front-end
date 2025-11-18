@@ -233,7 +233,14 @@ const loadUserInfo = async () => {
         avatar: user.avatar || '',
         username: user.username || '',
         email: user.email || '',
-        role: user.role === 'admin' ? '管理员' : '普通用户',
+        role:
+          user.role === 'super_admin'
+            ? '超级管理员'
+            : user.role === 'admin'
+              ? '管理员'
+              : user.role === 'vip'
+                ? `VIP${user.vipLevel || ''}`
+                : '普通用户',
         createdAt: user.createdAt || '',
         lastLogin: user.lastLogin || ''
       }

@@ -1,6 +1,7 @@
 // 自动导入：createRouter, createWebHistory 等 API 已自动导入
 // 注意：在 .js 配置文件中，建议保留手动导入以确保稳定性
 import { createRouter, createWebHistory } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import homeRoutes from './home'
 import layoutRoutes from './layout'
@@ -35,8 +36,8 @@ const router = createRouter({
   ]
 })
 
-// 路由守卫：处理需要登录的页面
-router.beforeEach((to, from, next) => {
+// 路由守卫：处理需要登录的页面和菜单权限
+router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
 
   // 设置页面标题
@@ -51,10 +52,27 @@ router.beforeEach((to, from, next) => {
       path: '/login',
       query: { redirect: to.fullPath }
     })
-  } else {
-    // 允许访问所有页面（包括已登录时访问登录页，用于切换账号等场景）
-    next()
+    return
   }
+
+  // 如果已登录且需要菜单权限检查
+  if (to.meta.requiresAuth && userStore.isLoggedIn && to.meta.menuKey) {
+    // 确保菜单权限已加载
+    if (userStore.menuPermissions.length === 0) {
+      await userStore.loadMenuPermissions()
+    }
+
+    // 检查是否有菜单权限
+    if (!userStore.hasMenuPermission(to.meta.menuKey)) {
+      // 没有权限，跳转到仪表盘或首页
+      ElMessage.warning('您没有访问该页面的权限')
+      next('/admin/dashboard')
+      return
+    }
+  }
+
+  // 允许访问
+  next()
 })
 
 export default router
