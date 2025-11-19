@@ -1,6 +1,8 @@
 <template>
-  <div v-for="(item, index) in items" :key="item.id || item.url || index" class="bigner-item">
-    <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
+  <div class="bigner-wrapper">
+    <div v-for="(item, index) in items" :key="item.id || item.url || index" class="bigner-item">
+      <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
+    </div>
   </div>
 </template>
 
@@ -14,6 +16,9 @@ const props = defineProps({
 </script>
 
 <style lang="scss" scoped>
+.bigner-wrapper {
+  margin: var(--mgm-gap) 0;
+}
 .bigner-item {
   height: var(--content-height);
   width: 100%;

@@ -143,7 +143,7 @@ onUnmounted(() => {
   touch-action: pan-x;
   cursor: grab;
   position: relative;
-  margin-bottom: var(--gutter-width);
+  margin: var(--mgm-gap) 0;
 }
 
 .swipeable-carousel-wrapper:active {

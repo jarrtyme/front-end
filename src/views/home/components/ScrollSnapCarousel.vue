@@ -231,7 +231,7 @@ const scrollToNext = () => {
 <style lang="scss" scoped>
 .scroll-snap-carousel-wrapper {
   position: relative;
-  margin-bottom: var(--gutter-width);
+  margin: var(--mgm-gap) 0;
 }
 
 .scroll-snap-container {
@@ -294,7 +294,7 @@ const scrollToNext = () => {
   .default-item {
     overflow: hidden;
     position: relative;
-    border-radius: 8px;
+    border-radius: 24px;
     height: 80%;
     width: 100%;
     img {

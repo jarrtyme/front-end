@@ -3,9 +3,9 @@
     ref="containerRef"
     class="seamless-carousel"
     :class="{ 'is-paused': isPaused, 'is-vertical': direction === 'vertical' }"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
   >
+    <!-- @mouseenter="handleMouseEnter"
+  @mouseleave="handleMouseLeave" -->
     <div ref="wrapperRef" class="seamless-carousel-wrapper" :style="wrapperStyle">
       <!-- 动态生成多个副本，确保铺满屏幕 -->
       <div
@@ -337,7 +337,7 @@ defineExpose({
   position: relative;
   width: 100%;
   overflow: hidden;
-  margin-bottom: var(--gutter-width);
+  margin: var(--mgm-gap) 0;
 
   &.is-vertical {
     height: 100%;

@@ -28,8 +28,7 @@ const props = defineProps({
     100% - var(--double-edge-border-width) - var(--safe-area-inset-lt) - var(--safe-area-inset-rt)
   );
   left: calc(var(--edge-border-width) + var(--safe-area-inset-lt));
-  margin: 0 auto;
-  margin-bottom: var(--gutter-width);
+  margin: var(--mgm-gap) 0;
 }
 
 .default-item {

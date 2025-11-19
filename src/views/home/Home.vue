@@ -7,7 +7,9 @@
       style="height: var(--el-header-height-1); background-color: rgba(255, 255, 255, 0.8)"
     ></div> -->
     <div class="home">
-      <VideoPlayer :src="getComponentItems('home4')[0]?.url || ''" text="ootd" />
+      <div class="home-video-container">
+        <VideoPlayer :src="getComponentItems('home5')[0]?.url || ''" text="Your Style, Your Echo." />
+      </div>
 
       <Carousel :items="getComponentItems('home2')" />
 
@@ -25,7 +27,7 @@
 
       <ScrollSnapCarousel
         :items="getComponentItems('home3')"
-        :height="400"
+        :height="640"
         :itemWidth="`calc(min(max(87.5vw, 280px) - 20px, 420px))`"
         :gap="20"
         :showArrows="true"
@@ -33,14 +35,20 @@
         snapAlign="start"
       />
 
-      <VideoPlayer :src="getComponentItems('home5')[0]?.url || ''" text="Your Style, Your Echo." />
+      <VideoPlayer :src="getComponentItems('home4')[0]?.url || ''" text="ootd" />
 
       <Desccard :items="getComponentItems('home2')" />
-      <Desccard :items="getComponentItems('home1')" />
+      <SeamlessCarousel
+        :items="[
+          ...getComponentItems('home1'),
+          ...getComponentItems('home2'),
+          ...getComponentItems('home3'),
+          ...getComponentItems('home4')
+        ]"
+      />
       <Carousel :items="getComponentItems('home1')" />
 
       <Bigner :items="getComponentItems('home1')" />
-      <!-- <SeamlessCarousel :items="getComponentItems('home1')" /> -->
     </div>
   </el-main>
 
@@ -108,5 +116,6 @@ onMounted(() => {
 .home {
   margin: 0 auto;
 }
+
 // Home 页面特定样式
 </style>

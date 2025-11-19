@@ -210,7 +210,7 @@ const handleMouseUp = e => {
   user-select: none;
   touch-action: pan-x;
   cursor: grab;
-  margin-bottom: var(--gutter-width);
+  margin: var(--mgm-gap) 0;
 }
 
 .image-carousel-wrapper:active {
