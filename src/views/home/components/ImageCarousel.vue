@@ -13,7 +13,7 @@
       ref="carouselRef"
       :interval="4000"
       type=""
-      height="200px"
+      height="400px"
       :autoplay="!isDragging"
       arrow="never"
       indicator-position="none"
@@ -68,6 +68,7 @@ const currentIndex = ref(0)
 
 // 触摸滑动相关
 const touchStartX = ref(0)
+const touchStartY = ref(0)
 const touchEndX = ref(0)
 const isDragging = ref(false)
 const startX = ref(0)
@@ -81,6 +82,7 @@ const handleCarouselChange = index => {
 const handleTouchStart = e => {
   const touch = e.touches[0]
   touchStartX.value = touch.clientX
+  touchStartY.value = touch.clientY
   isDragging.value = true
 }
 
@@ -88,6 +90,15 @@ const handleTouchMove = e => {
   if (!isDragging.value) return
   const touch = e.touches[0]
   touchEndX.value = touch.clientX
+
+  // 计算水平和垂直移动距离
+  const deltaX = Math.abs(touch.clientX - touchStartX.value)
+  const deltaY = Math.abs(touch.clientY - touchStartY.value)
+
+  // 只有在水平滑动明显大于垂直滑动时才阻止默认行为（允许垂直滚动）
+  if (deltaX > deltaY && deltaX > 10) {
+    e.preventDefault()
+  }
 }
 
 const handleTouchEnd = () => {
@@ -137,7 +148,8 @@ const handleMouseDown = e => {
   }
   isDragging.value = true
   startX.value = e.clientX
-  e.preventDefault()
+  // 不阻止默认行为，允许页面滚动
+  // e.preventDefault()
 }
 
 // 滚动到上一个
@@ -208,9 +220,9 @@ const handleMouseUp = e => {
 .image-carousel-wrapper {
   position: relative;
   user-select: none;
-  touch-action: pan-x;
+  touch-action: pan-x pan-y; /* 允许水平和垂直滑动 */
   cursor: grab;
-  margin: var(--mgm-gap) 0;
+  margin: var(--mgm-gap) auto;
 }
 
 .image-carousel-wrapper:active {
@@ -228,7 +240,7 @@ const handleMouseUp = e => {
 
 .carousel-item-content {
   width: 100%;
-  height: 200px;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;

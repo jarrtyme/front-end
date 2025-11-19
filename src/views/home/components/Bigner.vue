@@ -17,7 +17,7 @@ const props = defineProps({
 
 <style lang="scss" scoped>
 .bigner-wrapper {
-  margin: var(--mgm-gap) 0;
+  margin: var(--mgm-gap) auto;
 }
 .bigner-item {
   height: var(--content-height);

@@ -2,7 +2,7 @@
   <div class="scroll-snap-carousel-wrapper">
     <div ref="scrollContainer" class="scroll-snap-container" @scroll="handleScroll">
       <div class="scroll-snap-content">
-        <div class="scroll-snap-item-left" :style="{ width: gap + 'px' }"></div>
+        <!-- <div class="scroll-snap-item-left" :style="{ width: gap + 'px' }"></div> -->
         <div
           v-for="(item, index) in items"
           :key="index"
@@ -231,7 +231,7 @@ const scrollToNext = () => {
 <style lang="scss" scoped>
 .scroll-snap-carousel-wrapper {
   position: relative;
-  margin: var(--mgm-gap) 0;
+  margin: var(--mgm-gap) auto;
 }
 
 .scroll-snap-container {
@@ -272,6 +272,7 @@ const scrollToNext = () => {
 }
 
 .scroll-snap-item {
+  padding-left: var(--double-edge-border-width);
   scroll-snap-align: v-bind('snapAlign');
   scroll-snap-stop: always;
   height: 100%;

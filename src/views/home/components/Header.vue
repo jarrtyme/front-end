@@ -1,7 +1,7 @@
 <template>
   <!-- <el-header> -->
   <div class="header-menu-text">
-    <h3>每日穿搭，都是对生活的温柔告白。 Dress your day, gently.</h3>
+    <h3>每日穿搭，都是对生活的告白</h3>
   </div>
   <!-- <el-menu class="header-menu" mode="horizontal" default-active="home" router :ellipsis="false">
       <el-menu-item index="/" key="home">首页</el-menu-item>

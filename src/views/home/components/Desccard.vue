@@ -1,10 +1,6 @@
 <template>
   <div class="desc-card">
-    <div
-      v-for="(item, index) in items"
-      :key="item.id || item.url || index"
-      class="default-item"
-    >
+    <div v-for="(item, index) in items" :key="item.id || item.url || index" class="default-item">
       <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
     </div>
   </div>
@@ -28,7 +24,7 @@ const props = defineProps({
     100% - var(--double-edge-border-width) - var(--safe-area-inset-lt) - var(--safe-area-inset-rt)
   );
   left: calc(var(--edge-border-width) + var(--safe-area-inset-lt));
-  margin: var(--mgm-gap) 0;
+  margin: var(--mgm-gap) auto;
 }
 
 .default-item {

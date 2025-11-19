@@ -337,7 +337,7 @@ defineExpose({
   position: relative;
   width: 100%;
   overflow: hidden;
-  margin: var(--mgm-gap) 0;
+  margin: var(--mgm-gap) auto;
 
   &.is-vertical {
     height: 100%;

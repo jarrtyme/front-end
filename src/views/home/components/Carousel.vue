@@ -71,6 +71,15 @@ const handleTouchMove = e => {
   const touch = e.touches[0]
   touchEndX.value = touch.clientX
   touchEndY.value = touch.clientY
+
+  // 计算水平和垂直移动距离
+  const deltaX = Math.abs(touch.clientX - touchStartX.value)
+  const deltaY = Math.abs(touch.clientY - touchStartY.value)
+
+  // 只有在水平滑动明显大于垂直滑动时才阻止默认行为（允许垂直滚动）
+  if (deltaX > deltaY && deltaX > 10) {
+    e.preventDefault()
+  }
 }
 
 const handleTouchEnd = () => {
@@ -101,12 +110,14 @@ const handleTouchEnd = () => {
 const handleMouseDown = e => {
   isDragging.value = true
   startX.value = e.clientX
-  e.preventDefault()
+  // 不阻止默认行为，允许页面滚动
+  // e.preventDefault()
 }
 
 const handleMouseMove = e => {
   if (!isDragging.value) return
-  e.preventDefault()
+  // 不阻止默认行为，允许页面滚动
+  // e.preventDefault()
 }
 
 const handleMouseUp = e => {
@@ -140,10 +151,10 @@ onUnmounted(() => {
 <style scoped>
 .swipeable-carousel-wrapper {
   user-select: none;
-  touch-action: pan-x;
+  touch-action: pan-x pan-y; /* 允许水平和垂直滑动 */
   cursor: grab;
   position: relative;
-  margin: var(--mgm-gap) 0;
+  margin: var(--mgm-gap) auto;
 }
 
 .swipeable-carousel-wrapper:active {

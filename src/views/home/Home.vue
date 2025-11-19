@@ -8,7 +8,7 @@
     ></div> -->
     <div class="home">
       <div class="home-video-container">
-        <VideoPlayer :src="getComponentItems('home5')[0]?.url || ''" text="Your Style, Your Echo." />
+        <VideoPlayer :src="getComponentItems('home5')[0]?.url || ''" text="ootd" />
       </div>
 
       <Carousel :items="getComponentItems('home2')" />
@@ -35,9 +35,15 @@
         snapAlign="start"
       />
 
-      <VideoPlayer :src="getComponentItems('home4')[0]?.url || ''" text="ootd" />
+      <VideoPlayer
+        height="200px"
+        :showControls="false"
+        :src="getComponentItems('home4')[0]?.url || ''"
+        text="Echo or Style"
+      />
 
       <Desccard :items="getComponentItems('home2')" />
+      
       <SeamlessCarousel
         :items="[
           ...getComponentItems('home1'),
@@ -77,7 +83,21 @@ const componentItems = computed(() =>
   }, {})
 )
 
-const getComponentItems = name => componentItems.value[name] || []
+// Fisher-Yates 洗牌算法，用于随机排列数组
+const shuffleArray = array => {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
+const getComponentItems = name => {
+  const items = componentItems.value[name] || []
+  // 随机排列 items
+  return shuffleArray(items)
+}
 
 const mapComponentsToMediaList = response => {
   if (!response || !Array.isArray(response.data)) return []

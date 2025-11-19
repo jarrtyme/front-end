@@ -291,7 +291,7 @@ const handleLogin = async () => {
       ElMessage.success('登录成功')
 
       // 跳转到之前访问的页面，如果没有则跳转到首页
-      const redirect = route.query.redirect || '/'
+      const redirect = route.query.redirect || '/admin'
       router.push(redirect)
     } catch (error) {
       ElMessage.error(error.message || '登录失败，请检查用户名和密码')

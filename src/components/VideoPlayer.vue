@@ -47,7 +47,7 @@
       </svg>
     </div>
     <!-- 右上角播放控件 -->
-    <div class="video-controls" :class="{ 'is-visible': showControls }">
+    <div class="video-controls" v-if="showControls" :class="{ 'is-visible': showControls }">
       <el-button
         :icon="isPlaying ? VideoPause : VideoPlay"
         circle
@@ -65,6 +65,11 @@ import { VideoPlay, VideoPause } from '@element-plus/icons-vue'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
 
 const props = defineProps({
+  // 视频高度
+  height: {
+    type: String,
+    default: '100vh'
+  },
   // 视频源地址
   src: {
     type: String,
@@ -231,7 +236,7 @@ defineExpose({
 
   .video-player {
     width: 100vw !important;
-    height: 100vh !important;
+    height: v-bind(height) !important;
     object-fit: cover;
     display: block;
   }
