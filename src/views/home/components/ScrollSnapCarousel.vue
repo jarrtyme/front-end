@@ -10,8 +10,14 @@
           class="scroll-snap-item"
         >
           <slot name="item" :item="item" :index="index">
-            <div class="default-item">
-              <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
+            <div class="default-item-content">
+              <div class="default-item">
+                <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
+              </div>
+              <div class="default-item-content-text">
+                <h2>{{ item.des[0]?.text || 'ootd' }}</h2>
+                <p>{{ item.des[1]?.text || 'Your Style, Your Echo.' }}</p>
+              </div>
             </div>
           </slot>
         </div>
@@ -222,7 +228,7 @@ const scrollToNext = () => {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .scroll-snap-carousel-wrapper {
   position: relative;
   margin-bottom: var(--gutter-width);
@@ -269,21 +275,35 @@ const scrollToNext = () => {
   scroll-snap-align: v-bind('snapAlign');
   scroll-snap-stop: always;
   height: 100%;
+  margin-top: var(--gutter-width);
 }
 
-.default-item {
+.default-item-content {
   height: v-bind('height + "px"');
   width: v-bind('itemWidthStyle');
-  overflow: hidden;
-  position: relative;
-  border-radius: 8px;
-
-  img {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  .default-item-content-text {
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    display: block;
+    padding: var(--gutter-width);
+  }
+  .default-item {
+    overflow: hidden;
+    position: relative;
+    border-radius: 8px;
+    height: 80%;
+    width: 100%;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
   }
 }
 

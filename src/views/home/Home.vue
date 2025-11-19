@@ -2,21 +2,17 @@
   <Header />
 
   <el-main>
-    <div
+    <!-- <div
       class="header-bg"
       style="height: var(--el-header-height-1); background-color: rgba(255, 255, 255, 0.8)"
-    ></div>
+    ></div> -->
     <div class="home">
-      <Carousel :items="items.items1" />
-      <VideoPlayer
-        src="https://www.apple.com/105/media/us/macbook-pro/2025/785e1bc4-d1bd-4cf4-b1b3-94b9411c9e74/anim/performance-chip-background/medium.mp4"
-        text="MacBook Pro"
-      />
+      <VideoPlayer :src="getComponentItems('home4')[0]?.url || ''" text="ootd" />
 
-      <ImageCarousel :items="items.items2" />
+      <Carousel :items="getComponentItems('home2')" />
 
       <ScrollSnapCarousel
-        :items="items.items3"
+        :items="getComponentItems('home3')"
         :height="400"
         :itemWidth="`calc(min(max(87.5vw, 280px) - 20px, 420px))`"
         :gap="20"
@@ -25,9 +21,26 @@
         snapAlign="start"
       />
 
-      <Desccard :items="items.items4" />
-      <Bigner :items="items.items5" />
-      <SeamlessCarousel :items="items.items6" />
+      <ImageCarousel :items="getComponentItems('home2')" />
+
+      <ScrollSnapCarousel
+        :items="getComponentItems('home3')"
+        :height="400"
+        :itemWidth="`calc(min(max(87.5vw, 280px) - 20px, 420px))`"
+        :gap="20"
+        :showArrows="true"
+        :showIndicators="false"
+        snapAlign="start"
+      />
+
+      <VideoPlayer :src="getComponentItems('home5')[0]?.url || ''" text="Your Style, Your Echo." />
+
+      <Desccard :items="getComponentItems('home2')" />
+      <Desccard :items="getComponentItems('home1')" />
+      <Carousel :items="getComponentItems('home1')" />
+
+      <Bigner :items="getComponentItems('home1')" />
+      <!-- <SeamlessCarousel :items="getComponentItems('home1')" /> -->
     </div>
   </el-main>
 
@@ -35,6 +48,7 @@
 </template>
 
 <script setup name="Home">
+import { computed, onMounted, ref } from 'vue'
 import Carousel from '@/views/Home/components/Carousel.vue'
 import ImageCarousel from '@/views/Home/components/ImageCarousel.vue'
 import VideoPlayer from '@/components/VideoPlayer.vue'
@@ -44,58 +58,41 @@ import Desccard from '@/views/Home/components/Desccard.vue'
 import Bigner from '@/views/Home/components/Bigner.vue'
 import Header from '@/views/Home/components/Header.vue'
 import Footer from '@/views/Home/components/Footer.vue'
-import { getFileList } from '@/api/upload'
+import { getPublicPageComponentsByIds } from '@/api/pageComponent'
+const componentMediaList = ref([])
+const componentItems = computed(() =>
+  componentMediaList.value.reduce((acc, group) => {
+    if (group?.name) {
+      acc[group.name] = group.items ?? []
+    }
+    return acc
+  }, {})
+)
 
-const items = ref({
-  items1: [],
-  items2: [],
-  items3: [],
-  items4: [],
-  items5: [],
-  items6: []
-})
+const getComponentItems = name => componentItems.value[name] || []
+
+const mapComponentsToMediaList = response => {
+  if (!response || !Array.isArray(response.data)) return []
+  return response.data.map(component => ({
+    name: component.name || '',
+    items: (component.items || []).map(item => ({
+      url: item?.media?.url || '',
+      des: Array.isArray(item?.descriptions) ? item.descriptions : []
+    }))
+  }))
+}
 
 const getFileListAll = async () => {
   try {
-    const [res1, res2, res3, res4, res5, res6] = await Promise.all([
-      getFileList({
-        page: 1,
-        limit: 10,
-        description: '1'
-      }),
-      getFileList({
-        page: 1,
-        limit: 10,
-        description: '2'
-      }),
-      getFileList({
-        page: 1,
-        limit: 10,
-        description: '3'
-      }),
-      getFileList({
-        page: 1,
-        limit: 3,
-        description: '1'
-      }),
-      getFileList({
-        page: 1,
-        limit: 3,
-        description: '2'
-      }),
-      getFileList({
-        page: 1,
-        limit: 10,
-        description: '3'
-      })
+    const response = await getPublicPageComponentsByIds([
+      '691ddd42b580fac330cd7ed2',
+      '691ddd1bb580fac330cd7ec6',
+      '691ddcfdb580fac330cd7eb6',
+      '691ddc85b580fac330cd7e4c',
+      '691dda95b580fac330cd7d00'
     ])
-
-    items.value.items1 = res1?.data?.files || res1?.data?.list || []
-    items.value.items2 = res2?.data?.files || res2?.data?.list || []
-    items.value.items3 = res3?.data?.files || res3?.data?.list || []
-    items.value.items4 = res4?.data?.files || res4?.data?.list || []
-    items.value.items5 = res5?.data?.files || res5?.data?.list || []
-    items.value.items6 = res6?.data?.files || res6?.data?.list || []
+    componentMediaList.value = mapComponentsToMediaList(response)
+    console.log(componentMediaList.value)
   } catch (error) {
     console.error('加载文件列表失败:', error)
     // 静默失败，不显示错误提示，因为Home页面是公开页面，可能未登录

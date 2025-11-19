@@ -11,7 +11,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: './', // 生产环境使用相对路径，便于部署
+  base: '/', // 使用绝对根路径，避免部署在子路由刷新时静态资源 404
   plugins: [
     vue(),
     AutoImport({

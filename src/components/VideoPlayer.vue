@@ -302,7 +302,7 @@ defineExpose({
         letter-spacing: 4px;
         text-transform: uppercase;
         fill: black; // mask 中黑色表示透明，白色表示不透明
-        font-family: Arial, sans-serif;
+        font-family: var(--app-font-family, 'SF Pro', sans-serif);
         transform-origin: 50% 50%; // 设置缩放中心点（SVG transform 的默认中心点）
         will-change: transform; // 优化性能
 

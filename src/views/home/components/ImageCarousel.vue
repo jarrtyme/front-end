@@ -15,7 +15,7 @@
       type=""
       height="200px"
       :autoplay="!isDragging"
-      arrow="always"
+      arrow="never"
       indicator-position="none"
       :loop="false"
       @change="handleCarouselChange"
@@ -30,11 +30,30 @@
         </div>
       </el-carousel-item>
     </el-carousel>
+
+    <!-- 自定义导航箭头 -->
+    <div class="carousel-arrows">
+      <el-icon
+        class="arrow left-arrow"
+        :class="{ disabled: currentIndex === 0 }"
+        @click="scrollToPrev"
+      >
+        <ArrowLeft />
+      </el-icon>
+      <el-icon
+        class="arrow right-arrow"
+        :class="{ disabled: currentIndex === items.length - 1 }"
+        @click="scrollToNext"
+      >
+        <ArrowRight />
+      </el-icon>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
 const props = defineProps({
   // 轮播图数据，可以是数字数组、图片URL数组或对象数组
@@ -113,12 +132,34 @@ const handleTouchEnd = () => {
 // 鼠标拖拽事件处理（桌面端）
 const handleMouseDown = e => {
   // 如果点击的是箭头按钮，不触发拖拽
-  if (e.target.closest('.el-carousel__arrow')) {
+  if (e.target.closest('.carousel-arrows') || e.target.closest('.arrow')) {
     return
   }
   isDragging.value = true
   startX.value = e.clientX
   e.preventDefault()
+}
+
+// 滚动到上一个
+const scrollToPrev = () => {
+  if (!carouselRef.value || currentIndex.value === 0) return
+  const prevIndex = currentIndex.value - 1
+  if (typeof carouselRef.value.setActiveItem === 'function') {
+    carouselRef.value.setActiveItem(prevIndex)
+  } else if (typeof carouselRef.value.prev === 'function') {
+    carouselRef.value.prev()
+  }
+}
+
+// 滚动到下一个
+const scrollToNext = () => {
+  if (!carouselRef.value || currentIndex.value >= props.items.length - 1) return
+  const nextIndex = currentIndex.value + 1
+  if (typeof carouselRef.value.setActiveItem === 'function') {
+    carouselRef.value.setActiveItem(nextIndex)
+  } else if (typeof carouselRef.value.next === 'function') {
+    carouselRef.value.next()
+  }
 }
 
 const handleMouseMove = e => {
@@ -213,61 +254,62 @@ const handleMouseUp = e => {
   background-color: #d3dce6;
 }
 
-/* 自定义 Element Plus 默认箭头样式 - 确保始终显示 */
-:deep(.el-carousel__arrow) {
-  width: 40px !important;
-  height: 40px !important;
-  background-color: rgba(255, 255, 255, 0.9) !important;
-  border-radius: 50% !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+/* 自定义导航箭头样式 */
+.carousel-arrows {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  padding: 0 16px;
+  z-index: 10;
+}
+
+.arrow {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 10 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-}
-
-:deep(.el-carousel__arrow:hover) {
-  background-color: rgba(255, 255, 255, 1) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  transform: scale(1.1) !important;
-}
-
-:deep(.el-carousel__arrow:active) {
-  transform: scale(1.1) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-:deep(.el-carousel__arrow--left) {
-  left: 16px !important;
-}
-
-:deep(.el-carousel__arrow--right) {
-  right: 16px !important;
-}
-
-/* 确保箭头图标可见 */
-:deep(.el-carousel__arrow .el-icon) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   font-size: 20px;
   color: #475669;
+  pointer-events: all;
+  position: relative;
+}
+
+.arrow:hover {
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transform: scale(1.1);
+}
+
+.arrow:active {
+  transform: scale(0.95);
+}
+
+.arrow.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  :deep(.el-carousel__arrow) {
+  .carousel-arrows {
+    padding: 0 8px;
+  }
+
+  .arrow {
     width: 36px;
     height: 36px;
-  }
-
-  :deep(.el-carousel__arrow--left) {
-    left: 12px;
-  }
-
-  :deep(.el-carousel__arrow--right) {
-    right: 12px;
+    font-size: 18px;
   }
 }
 </style>

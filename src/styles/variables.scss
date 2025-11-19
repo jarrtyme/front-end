@@ -38,27 +38,8 @@ $font-size-xl: 20px;
 $font-size-xxl: 24px;
 
 // 字体族
-// 苹果系统字体栈（SF Pro Display/Text）- 用于界面文本
-// 优先使用自定义字体，回退到系统字体
-$font-family-apple:
-  'SF Pro',
-  'SF Pro Display',
-  'SF Pro Text',
-  -apple-system,
-  BlinkMacSystemFont,
-  'Helvetica Neue',
-  Helvetica,
-  Arial,
-  sans-serif;
-
-// 苹果等宽字体栈（SF Mono）- 用于代码
-$font-family-mono:
-  'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Fira Mono', 'Droid Sans Mono',
-  'Source Code Pro', 'Courier New', monospace;
-
-// 完整字体栈（包含 emoji 支持）
-// 优先使用自定义字体，确保所有设备显示一致
-$font-family-base:
+// SF Pro 主字体栈（用于 UI 与正文）
+$font-stack-sf-pro:
   'SF Pro',
   'SF Pro Display',
   'SF Pro Text',
@@ -70,11 +51,22 @@ $font-family-base:
   Helvetica,
   Arial,
   'Noto Sans',
-  sans-serif,
-  'Apple Color Emoji',
-  'Segoe UI Emoji',
-  'Segoe UI Symbol',
-  'Noto Color Emoji';
+  sans-serif;
+
+// Emoji 字体栈
+$font-stack-emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+// 苹果系统字体栈（与 SF Pro 相同，向后兼容）
+$font-family-apple: $font-stack-sf-pro;
+
+// 苹果等宽字体栈（SF Mono）- 用于代码
+$font-family-mono:
+  'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Fira Mono', 'Droid Sans Mono',
+  'Source Code Pro', 'Courier New', monospace;
+
+// 完整字体栈（包含 emoji 支持）
+// 优先使用自定义字体，确保所有设备显示一致
+$font-family-base: $font-stack-sf-pro, $font-stack-emoji;
 
 // 圆角
 $border-radius: 20px;

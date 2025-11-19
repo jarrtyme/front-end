@@ -1,9 +1,8 @@
 // 苹果字体配置
 // 使用 @font-face 声明自定义字体，确保所有设备都能显示相同的字体效果
 
-// ==================== SF Pro ====================
-// 使用用户提供的 SF-Pro 字体文件
-// 优先使用 WOFF2 格式（体积更小，加载更快），回退到 TTF
+// ==================== SF Pro 全量权重 ====================
+// 统一使用同一字体族名，避免重复引用
 @font-face {
   font-family: 'SF Pro';
   src:
@@ -14,21 +13,8 @@
   font-display: swap;
 }
 
-// ==================== SF Pro Display ====================
-// 用于大标题和展示文本（20px 及以上）
-// 使用 SF Pro 字体作为所有字重的回退
 @font-face {
-  font-family: 'SF Pro Display';
-  src:
-    url('../assets/fonts/SF-Pro.woff2') format('woff2'),
-    url('../assets/fonts/SF-Pro.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'SF Pro Display';
+  font-family: 'SF Pro';
   src:
     url('../assets/fonts/SF-Pro.woff2') format('woff2'),
     url('../assets/fonts/SF-Pro.ttf') format('truetype');
@@ -38,7 +24,7 @@
 }
 
 @font-face {
-  font-family: 'SF Pro Display';
+  font-family: 'SF Pro';
   src:
     url('../assets/fonts/SF-Pro.woff2') format('woff2'),
     url('../assets/fonts/SF-Pro.ttf') format('truetype');
@@ -48,50 +34,7 @@
 }
 
 @font-face {
-  font-family: 'SF Pro Display';
-  src:
-    url('../assets/fonts/SF-Pro.woff2') format('woff2'),
-    url('../assets/fonts/SF-Pro.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-// ==================== SF Pro Text ====================
-// 用于正文和界面文本（12-19px）
-// 使用 SF Pro 字体作为所有字重的回退
-@font-face {
-  font-family: 'SF Pro Text';
-  src:
-    url('../assets/fonts/SF-Pro.woff2') format('woff2'),
-    url('../assets/fonts/SF-Pro.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'SF Pro Text';
-  src:
-    url('../assets/fonts/SF-Pro.woff2') format('woff2'),
-    url('../assets/fonts/SF-Pro.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'SF Pro Text';
-  src:
-    url('../assets/fonts/SF-Pro.woff2') format('woff2'),
-    url('../assets/fonts/SF-Pro.ttf') format('truetype');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'SF Pro Text';
+  font-family: 'SF Pro';
   src:
     url('../assets/fonts/SF-Pro.woff2') format('woff2'),
     url('../assets/fonts/SF-Pro.ttf') format('truetype');

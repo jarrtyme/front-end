@@ -26,8 +26,8 @@
 @use '../variables.scss' as *;
 
 :root {
-  // Element Plus 字体配置（使用苹果字体）
-  --el-font-family: #{$font-family-base};
+  // Element Plus 字体配置（继承全局 SF Pro）
+  --el-font-family: var(--app-font-family, #{$font-family-base});
   // Element Plus 圆角配置（使用项目的 $border-radius）
   // 注意：由于 $border-radius-base 没有使用 !default，无法通过 SCSS 变量覆盖
   // 因此使用 CSS 自定义属性来覆盖
@@ -85,8 +85,8 @@
   margin: 0 auto;
   background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: saturate(180%) blur(20px);
-  --el-footer-padding: 0 20px;
-  --el-footer-height: 60px;
+  --el-footer-padding: 20px;
+  --el-footer-height: fit-content;
   --el-footer-bg-color: var(--el-bg-color);
 }
 .el-menu {

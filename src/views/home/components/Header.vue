@@ -1,10 +1,13 @@
 <template>
-  <el-header>
-    <el-menu class="header-menu" mode="horizontal" default-active="home" router :ellipsis="false">
+  <!-- <el-header> -->
+  <div class="header-menu-text">
+    <h3>每日穿搭，都是对生活的温柔告白。 Dress your day, gently.</h3>
+  </div>
+  <!-- <el-menu class="header-menu" mode="horizontal" default-active="home" router :ellipsis="false">
       <el-menu-item index="/" key="home">首页</el-menu-item>
       <el-menu-item index="/about">关于</el-menu-item>
-    </el-menu>
-  </el-header>
+    </el-menu> -->
+  <!-- </el-header> -->
 </template>
 
 <script setup>
@@ -14,11 +17,32 @@ defineOptions({
 </script>
 
 <style lang="scss" scoped>
-.header-menu {
+.header-menu-text {
   backdrop-filter: saturate(180%) blur(20px);
-  background-color: rgba(250, 250, 252, 0.8);
   width: auto;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border-bottom: rgb(0, 0, 0);
+  position: sticky;
+  font-weight: 600;
+  top: 0;
+  z-index: 10;
+
+  height: var(--el-header-height-1);
+  h3 {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+}
+.header-menu {
+  backdrop-filter: saturate(180%) blur(20px);
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   border-bottom: rgb(29, 29, 31);
 }
 
