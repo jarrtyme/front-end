@@ -17,7 +17,8 @@ export const useUserStore = defineStore('user', {
       token,
       userInfo,
       rememberMe,
-      menuPermissions: [] // 菜单权限列表
+      menuPermissions: [], // 菜单权限列表
+      menuPermissionMode: 'default'
     }
   },
 
@@ -155,6 +156,7 @@ export const useUserStore = defineStore('user', {
       this.userInfo = null
       this.rememberMe = false
       this.menuPermissions = []
+      this.menuPermissionMode = 'default'
 
       // 清除所有存储位置
       localStorage.removeItem('token')
@@ -174,18 +176,25 @@ export const useUserStore = defineStore('user', {
         const response = await getMyMenuPermissions()
         if (response.code === 200 && response.data) {
           this.menuPermissions = response.data.menuPermissions || []
+          this.menuPermissionMode = response.data.menuPermissionMode || 'default'
         } else {
           this.menuPermissions = []
+          this.menuPermissionMode = 'default'
         }
       } catch (error) {
         console.error('加载菜单权限失败:', error)
         this.menuPermissions = []
+        this.menuPermissionMode = 'default'
       }
     },
 
     // 设置菜单权限
     setMenuPermissions(menuPermissions) {
       this.menuPermissions = menuPermissions || []
+    },
+
+    setMenuPermissionMode(mode = 'default') {
+      this.menuPermissionMode = mode
     }
   }
 })

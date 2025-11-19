@@ -32,14 +32,35 @@
   // 注意：由于 $border-radius-base 没有使用 !default，无法通过 SCSS 变量覆盖
   // 因此使用 CSS 自定义属性来覆盖
   --el-border-radius-base: #{$border-radius};
-  --el-box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
-  --el-dialog-box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+  --el-box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+  --el-dialog-box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
 }
 
 // Element Plus 在组件样式中定义了变量（如 --el-header-padding: 0 20px;）
 // 这些变量在组件作用域内，优先级比 :root 高
 // 我们需要在组件上直接覆盖这些变量
 
+.el-overlay-dialog {
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.35),
+    0 10px 30px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+
+  backdrop-filter: blur(20px);
+}
+.el-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+}
+.el-message-box {
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.35),
+    0 10px 30px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 14px;
+}
 .el-header {
   // 在组件上重新定义变量，覆盖 Element Plus 组件中的变量定义
   --el-header-padding: 0px;
@@ -50,7 +71,7 @@
   z-index: 19;
 }
 
-.el-message{
+.el-message {
   top: 10vh !important;
 }
 

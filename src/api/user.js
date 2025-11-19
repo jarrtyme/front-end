@@ -65,8 +65,12 @@ export function updateUserVipLevel(userId, vipLevel) {
  * @param {Array<string>} menuPermissions - 菜单权限列表
  * @returns {Promise}
  */
-export function updateUserMenuPermissions(userId, menuPermissions) {
-  return post(`/menu-permission/user/${userId}`, { menuPermissions })
+export function updateUserMenuPermissions(userId, menuPermissions, mode) {
+  const payload = { menuPermissions }
+  if (mode) {
+    payload.mode = mode
+  }
+  return post(`/menu-permission/user/${userId}`, payload)
 }
 
 /**

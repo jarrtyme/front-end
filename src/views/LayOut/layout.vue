@@ -143,6 +143,12 @@ const allMenuItems = [
         label: '页面管理',
         path: '/admin/pages',
         description: '管理页面配置，组合多个组件'
+      },
+      {
+        key: 'menu-permission',
+        label: '权限管理',
+        path: '/admin/menu-permission',
+        description: '可视化配置用户菜单权限与模板'
       }
     ]
   },

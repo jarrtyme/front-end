@@ -64,6 +64,16 @@ const layoutRoutes = [
         }
       },
       {
+        path: 'menu-permission',
+        name: 'AdminMenuPermission',
+        component: () => import('@/views/LayOut/pages/permission/MenuPermissionManager.vue'),
+        meta: {
+          title: '权限管理',
+          requiresAuth: true,
+          menuKey: 'menu-permission'
+        }
+      },
+      {
         path: 'upload',
         name: 'AdminUpload',
         component: () => import('@/views/LayOut/pages/tools/Upload.vue'),

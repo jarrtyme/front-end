@@ -78,10 +78,13 @@
             {{ row.createdAt ? new Date(row.createdAt).toLocaleString('zh-CN') : '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="240" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="handleEdit(row)"> 编辑 </el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(row)"> 删除 </el-button>
+            <el-button type="primary" link size="small" @click="handleEdit(row)">编辑</el-button>
+            <el-button type="success" link size="small" @click="gotoMenuPermission(row)">
+              菜单权限
+            </el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -154,6 +157,8 @@ import ModernDialog from '@/components/ModernDialog.vue'
 defineOptions({
   name: 'Users'
 })
+
+const router = useRouter()
 
 const searchKeyword = ref('')
 const loading = ref(false)
@@ -255,6 +260,13 @@ const handleEdit = row => {
     isActive: row.isActive !== false
   }
   editDialogVisible.value = true
+}
+
+const gotoMenuPermission = row => {
+  router.push({
+    path: '/admin/menu-permission',
+    query: { userId: row._id || row.id }
+  })
 }
 
 const handleDialogClose = () => {
