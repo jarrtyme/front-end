@@ -22,23 +22,6 @@
 //    用途：用于需要固定最大宽度的元素，如卡片、按钮组等
 //  -->
 
-// 导入变量文件（通过 @use 导入时需要显式导入）
-@use '../variables.scss' as *;
-
-:root {
-  // Element Plus 字体配置（继承全局 SF Pro）
-  --el-font-family: var(--app-font-family, #{$font-family-base});
-  // Element Plus 圆角配置（使用项目的 $border-radius）
-  // 注意：由于 $border-radius-base 没有使用 !default，无法通过 SCSS 变量覆盖
-  // 因此使用 CSS 自定义属性来覆盖
-  --el-bg-color-page: #0a0a0a !important;
-  --el-border-radius-base: #{$border-radius};
-  --el-box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
-  --el-dialog-box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
-}
-
 // Element Plus 在组件样式中定义了变量（如 --el-header-padding: 0 20px;）
 // 这些变量在组件作用域内，优先级比 :root 高
 // 我们需要在组件上直接覆盖这些变量
