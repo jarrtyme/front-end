@@ -560,15 +560,4 @@ onMounted(() => {
 .fade-leave-to {
   opacity: 0;
 }
-
-// 响应式设计
-@media (max-width: 768px) {
-  .nav-menu {
-    display: none;
-  }
-
-  .nav-container {
-    padding: 0 16px;
-  }
-}
 </style>

@@ -42,7 +42,7 @@ router.beforeEach(async (to, from, next) => {
 
   // 设置页面标题
   if (to.meta.title) {
-    document.title = `${to.meta.title} - ${import.meta.env.VITE_APP_TITLE || 'Vue3 官网'}`
+    document.title = `${import.meta.env.VITE_APP_TITLE || 'Vue3 官网'} - ${to.meta.title}`
   }
 
   // 检查是否需要登录

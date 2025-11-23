@@ -397,11 +397,4 @@ defineExpose({
   color: var(--text-color, #1d1d1f);
 }
 
-// 响应式调整
-@media (max-width: 768px) {
-  .default-item {
-    width: 150px;
-    height: 112px;
-  }
-}
 </style>

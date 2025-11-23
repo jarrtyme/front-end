@@ -244,8 +244,6 @@ const handleConfirm = () => {
     display: flex;
     justify-content: flex-end;
   }
-
-  
 }
 
 .modern-dialog-header {
@@ -354,51 +352,6 @@ const handleConfirm = () => {
         background-color: #f5f5f5;
         color: #999;
         font-size: 14px;
-      }
-    }
-  }
-}
-
-// 响应式设计
-@media (max-width: 768px) {
-  .modern-dialog-header {
-    padding: 10px;
-
-    .header-content {
-      .header-title {
-        font-size: 16px;
-      }
-    }
-
-    .close-button {
-      top: 10px;
-      right: 10px;
-      width: 28px;
-      height: 28px;
-
-      svg {
-        width: 14px;
-        height: 14px;
-      }
-    }
-  }
-
-  .modern-dialog-body {
-    padding: 0 20px 20px;
-
-    .content-card {
-      padding: 20px;
-      border-radius: 12px;
-    }
-
-    .images-section {
-      flex-direction: column;
-      gap: 12px;
-
-      .image-item {
-        .image {
-          height: 150px;
-        }
       }
     }
   }

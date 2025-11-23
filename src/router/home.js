@@ -6,10 +6,10 @@ const homeRoutes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('@/views/home/Home.vue'),
+    component: () => import('@/views/Home/Home.vue'),
     meta: {
       keepAlive: true,
-      title: '首页',
+      title: 'ootd diary',
       requiresAuth: false // 首页不需要登录
     }
   },

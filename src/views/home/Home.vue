@@ -7,16 +7,14 @@
       style="height: var(--el-header-height-1); background-color: rgba(255, 255, 255, 0.8)"
     ></div> -->
     <div class="home">
-      <div class="home-video-container">
-        <VideoPlayer :src="getComponentItems('home5')[0]?.url || ''" text="ootd" />
-      </div>
+      <VideoPlayer :src="getComponentItems('home5')[0]?.url || ''" text="ootd" />
 
       <Carousel :items="getComponentItems('home2')" />
 
       <ScrollSnapCarousel
         :items="getComponentItems('home3')"
-        :height="400"
-        :itemWidth="`calc(min(max(87.5vw, 280px) - 20px, 420px))`"
+        :height="640"
+        :itemWidth="`calc(min(max(87.5vw, 280px) - 20px, 720px))`"
         :gap="20"
         :showArrows="true"
         :showIndicators="false"
@@ -43,7 +41,7 @@
       />
 
       <Desccard :items="getComponentItems('home2')" />
-      
+
       <SeamlessCarousel
         :items="[
           ...getComponentItems('home1'),
@@ -136,6 +134,5 @@ onMounted(() => {
 .home {
   margin: 0 auto;
 }
-
 // Home 页面特定样式
 </style>

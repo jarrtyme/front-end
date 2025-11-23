@@ -130,7 +130,7 @@ const gradientColors = computed(() => props.gradientColors)
 // 使用滚动动画 hook
 const animationOptions = {
   start: 'top top',
-  end: 2000,
+  end: 'bottom bottom',
   enabled: !!props.text, // 只有当有文字时才启用动画
   minScale: 32,
   maxScale: 1,
@@ -235,7 +235,7 @@ defineExpose({
   margin-bottom: var(--gutter-width);
 
   .video-player {
-    width: 100vw !important;
+    width: 100% !important;
     height: v-bind(height) !important;
     object-fit: cover;
     display: block;
@@ -310,15 +310,6 @@ defineExpose({
         font-family: var(--app-font-family, 'SF Pro', sans-serif);
         transform-origin: 50% 50%; // 设置缩放中心点（SVG transform 的默认中心点）
         will-change: transform; // 优化性能
-
-        @media (max-width: 768px) {
-          font-size: 48px;
-          letter-spacing: 2px;
-        }
-        @media (max-width: 480px) {
-          font-size: 36px;
-          letter-spacing: 1px;
-        }
       }
     }
   }

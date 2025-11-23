@@ -312,16 +312,5 @@ const handleMouseUp = e => {
   pointer-events: none;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .carousel-arrows {
-    padding: 0 8px;
-  }
 
-  .arrow {
-    width: 36px;
-    height: 36px;
-    font-size: 18px;
-  }
-}
 </style>

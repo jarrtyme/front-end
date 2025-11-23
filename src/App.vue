@@ -1,12 +1,17 @@
 <template>
-  <router-view v-slot="{ Component, route }">
-    <keep-alive :include="keepAliveRoutes">
-      <component :is="Component" :key="route.fullPath" />
-    </keep-alive>
-  </router-view>
+  <div class="app-container">
+    <router-view v-slot="{ Component, route }">
+      <keep-alive :include="keepAliveRoutes">
+        <component :is="Component" :key="route.fullPath" />
+      </keep-alive>
+    </router-view>
+  </div>
 </template>
 
 <script setup>
+import { useSrcean } from '@/hooks/useSrcean'
+const { scale } = useSrcean()
+
 // 自动导入：computed, useRoute, useRouter 等 API 已自动导入，无需手动 import
 
 const route = useRoute()
@@ -23,3 +28,11 @@ const keepAliveRoutes = computed(() => {
     .filter(Boolean)
 })
 </script>
+
+<style lang="scss">
+.app-container {
+  zoom: v-bind(scale);
+  height: 100%;
+  width: 100%;
+}
+</style>
