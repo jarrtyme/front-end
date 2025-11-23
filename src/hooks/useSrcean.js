@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import { useWindowSize } from '@vueuse/core'
 
 // 根据屏幕宽度计算缩放比例
-export const useSrcean = (contentWidth = 768) => {
+export const useSrcean = (contentWidth = 800) => {
   const { width } = useWindowSize()
 
   const scale = computed(() => {
