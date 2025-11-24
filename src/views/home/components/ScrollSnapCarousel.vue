@@ -74,9 +74,16 @@ const props = defineProps({
     default: () => []
   },
   // 每个项目的宽度（支持数字 px 或 CSS 字符串，如 calc()）
+  // 如果设置了 widthMode，此属性将被忽略
   itemWidth: {
     type: [Number, String],
-    default: 300
+    default: null
+  },
+  // 宽度模式：'wide' 宽模式（最大720px）或 'narrow' 窄模式（最大480px）
+  widthMode: {
+    type: String,
+    default: 'wide',
+    validator: value => ['wide', 'narrow'].includes(value)
   },
   height: {
     type: Number,
@@ -122,23 +129,43 @@ const setItemRef = (el, index) => {
   }
 }
 
+// 根据 widthMode 计算 itemWidth
+const computedItemWidth = computed(() => {
+  // 如果明确指定了 itemWidth，优先使用
+  if (props.itemWidth !== null && props.itemWidth !== undefined) {
+    if (typeof props.itemWidth === 'string') {
+      return props.itemWidth
+    }
+    return `${props.itemWidth}px`
+  }
+
+  // 根据 widthMode 计算
+  if (props.widthMode === 'narrow') {
+    // 窄模式：最大宽度 480px
+    return `calc(min(max(87.5vw, 280px) - ${props.gap}px, 480px))`
+  } else {
+    // 宽模式：最大宽度 720px（默认）
+    return `calc(min(max(87.5vw, 280px) - ${props.gap}px, 720px))`
+  }
+})
+
 // 计算每个项目的实际宽度（包括间距）
 // 如果 itemWidth 是字符串（CSS calc），则返回字符串；如果是数字，则计算数值
 const itemWidthWithGap = computed(() => {
-  if (typeof props.itemWidth === 'string') {
+  const width = computedItemWidth.value
+  if (typeof width === 'string') {
     // 如果是 CSS 字符串，返回字符串（用于 CSS），但无法在 JS 中精确计算
     // 这种情况下，滚动对齐主要依赖 CSS scroll-snap
-    return `calc(${props.itemWidth} + ${props.gap}px)`
+    return `calc(${width} + ${props.gap}px)`
   }
-  return props.itemWidth + props.gap
+  // 如果是数字字符串，转换为数字
+  const numWidth = typeof width === 'string' ? parseFloat(width) : width
+  return numWidth + props.gap
 })
 
 // 计算 itemWidth 的 CSS 值（用于样式绑定）
 const itemWidthStyle = computed(() => {
-  if (typeof props.itemWidth === 'string') {
-    return props.itemWidth
-  }
-  return `${props.itemWidth}px`
+  return computedItemWidth.value
 })
 
 // 处理滚动事件
@@ -147,7 +174,7 @@ const handleScroll = () => {
 
   // 如果 itemWidth 是字符串（CSS calc），无法精确计算索引
   // 使用元素位置来判断当前索引
-  if (typeof props.itemWidth === 'string') {
+  if (typeof computedItemWidth.value === 'string') {
     const scrollLeft = scrollContainer.value.scrollLeft
     let closestIndex = 0
     let minDistance = Infinity
@@ -292,11 +319,18 @@ const scrollToNext = () => {
 }
 
 .scroll-snap-item {
-  padding-left: var(--double-edge-border-width);
   scroll-snap-align: v-bind('snapAlign');
   scroll-snap-stop: always;
   height: 100%;
   margin-top: var(--gutter-width);
+
+  &:first-child {
+    padding-left: calc(var(--double-edge-border-width) + var(--gutter-width));
+  }
+
+  &:last-child {
+    padding-right: calc(var(--double-edge-border-width) + var(--gutter-width));
+  }
 }
 
 .default-item-content {

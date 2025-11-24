@@ -150,6 +150,8 @@
 </template>
 
 <script setup>
+import { ref, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { User, Lock, Message } from '@element-plus/icons-vue'
 import { register as registerApi } from '@/api/auth'
 import { ElMessage } from 'element-plus'

@@ -121,6 +121,7 @@ import {
   getFileTypeName,
   FILE_TYPES
 } from '@/config/fileType'
+import { getPageSizeOptions } from '@/config/pagination'
 
 const props = defineProps({
   fileList: {
@@ -147,15 +148,6 @@ const emit = defineEmits([
   'delete',
   'open-description-dialog'
 ])
-
-import {
-  isImageFile,
-  isVideoFile,
-  getFileTypeFromName,
-  getFileTypeTag,
-  getFileTypeName,
-  FILE_TYPES
-} from '@/config/fileType'
 
 // 工具函数
 const isImage = filename => {

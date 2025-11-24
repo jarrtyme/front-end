@@ -143,6 +143,14 @@
           <el-switch v-model="editForm.isActive" active-text="启用" inactive-text="禁用" />
         </el-form-item>
 
+        <!-- 滚动快照宽度模式配置 -->
+        <el-form-item v-if="editForm.displayType === DISPLAY_TYPES.SCROLL_SNAP" label="宽度模式">
+          <el-radio-group v-model="editForm.widthMode">
+            <el-radio label="wide">宽模式（最大720px）</el-radio>
+            <el-radio label="narrow">窄模式（最大480px）</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
         <!-- 组件项管理 -->
         <el-form-item label="组件项">
           <div class="items-container">
@@ -342,6 +350,8 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete, Search, Refresh, Picture } from '@element-plus/icons-vue'
 import {
   getPageComponentList,
@@ -356,7 +366,8 @@ import {
   getDisplayTypeLabel,
   getDisplayTypeTagType,
   getDisplayTypeOptions,
-  DEFAULT_DISPLAY_TYPE
+  DEFAULT_DISPLAY_TYPE,
+  DISPLAY_TYPES
 } from '@/config/displayType'
 import { DEFAULT_PAGE, getDefaultPageSize, getPageSizeOptions } from '@/config/pagination'
 import { FILE_TYPES } from '@/config/fileType'
@@ -385,7 +396,8 @@ const editForm = ref({
   displayType: DEFAULT_DISPLAY_TYPE,
   items: [],
   order: 0,
-  isActive: true
+  isActive: true,
+  widthMode: 'wide' // 滚动快照宽度模式：'wide' 或 'narrow'
 })
 
 // 表单验证规则
@@ -475,7 +487,8 @@ const handleCreate = () => {
     displayType: DEFAULT_DISPLAY_TYPE,
     items: [],
     order: 0,
-    isActive: true
+    isActive: true,
+    widthMode: 'wide'
   }
   editDialogVisible.value = true
 }
@@ -505,7 +518,8 @@ const handleEdit = async row => {
           }))
         })),
         order: data.order || 0,
-        isActive: data.isActive !== false
+        isActive: data.isActive !== false,
+        widthMode: data.widthMode || 'wide' // 读取 widthMode，默认为 'wide'
       }
       editDialogVisible.value = true
     } else {
@@ -605,6 +619,11 @@ const confirmEdit = async () => {
       isActive: editForm.value.isActive
     }
 
+    // 如果是滚动快照类型，添加 widthMode
+    if (editForm.value.displayType === DISPLAY_TYPES.SCROLL_SNAP) {
+      submitData.widthMode = editForm.value.widthMode || 'wide'
+    }
+
     let response
     if (isEdit.value) {
       response = await updatePageComponent(editForm.value._id, submitData)
@@ -638,7 +657,8 @@ const handleDialogClose = () => {
     displayType: DEFAULT_DISPLAY_TYPE,
     items: [],
     order: 0,
-    isActive: true
+    isActive: true,
+    widthMode: 'wide'
   }
   currentItemIndex.value = -1
   selectedMedia.value = null
@@ -866,6 +886,8 @@ const handlePageChange = val => {
   .item-content {
     display: flex;
     gap: 20px;
+    flex-wrap: wrap;
+    flex-direction: row;
   }
 
   .media-section,

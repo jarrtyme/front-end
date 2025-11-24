@@ -126,6 +126,8 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { User, Box, Upload, ShoppingCart, Setting, Picture } from '@element-plus/icons-vue'
 import { getUserList } from '@/api/user'
 import { findClothing, getClothingStats } from '@/api/clothing'

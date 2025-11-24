@@ -27,8 +27,8 @@
         <ScrollSnapCarousel
           v-else-if="component.displayType === DISPLAY_TYPES.SCROLL_SNAP && component.isActive"
           :items="getComponentItemsData(component)"
-          :height="640"
-          :itemWidth="`calc(min(max(87.5vw, 280px) - 20px, 720px))`"
+          :height="getScrollSnapHeight(component)"
+          :widthMode="getScrollSnapWidthMode(component)"
           :gap="20"
           :showArrows="true"
           :showIndicators="false"
@@ -176,6 +176,21 @@ const getVideoAutoplay = component => {
   return true
 }
 
+// 获取滚动快照的高度
+const getScrollSnapHeight = component => {
+  // 可以从 component 的配置中读取，或使用默认值
+  // 暂时使用默认值 640
+  return 640
+}
+
+// 获取滚动快照的宽度模式
+const getScrollSnapWidthMode = component => {
+  // 可以从 component 的配置中读取 widthMode
+  // 支持从 component.widthMode 或 component.config?.widthMode 读取
+  // 默认使用 'wide' 宽模式
+  return component?.widthMode || component?.config?.widthMode || 'wide'
+}
+
 // 加载页面组件数据
 const loadPageComponents = async () => {
   try {
@@ -183,21 +198,22 @@ const loadPageComponents = async () => {
     // 这里先使用硬编码的ID列表，后续可以改为从页面配置读取
     const response = await getPublicPageComponentsByIds([
       '691ddd42b580fac330cd7ed2',
-      '691ddd1bb580fac330cd7ec6',
       '691ddcfdb580fac330cd7eb6',
       '691ddc85b580fac330cd7e4c',
-      '691dda95b580fac330cd7d00'
+      '691dda95b580fac330cd7d00',
+      '691ddd1bb580fac330cd7ec6'
     ])
 
     if (response && response.code === 200 && Array.isArray(response.data)) {
-      // 保存完整的组件信息，包括 displayType, order, isActive
+      // 保存完整的组件信息，包括 displayType, order, isActive, widthMode
       componentsList.value = response.data.map(component => ({
         _id: component._id?.toString() || component._id, // 确保 ID 是字符串
         name: component.name || '',
         displayType: component.displayType || DEFAULT_DISPLAY_TYPE,
         order: component.order ?? 0,
         isActive: component.isActive !== false, // 默认为 true
-        items: Array.isArray(component.items) ? component.items : []
+        items: Array.isArray(component.items) ? component.items : [],
+        widthMode: component.widthMode || 'wide' // 滚动快照宽度模式，默认为 'wide'
       }))
     }
 

@@ -315,6 +315,8 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete, Search, Refresh, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
 import { getPageList, createPage, updatePage, deletePage, getPageById } from '@/api/page'
 import { getPageComponentList } from '@/api/pageComponent'
