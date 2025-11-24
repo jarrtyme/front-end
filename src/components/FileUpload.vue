@@ -45,13 +45,20 @@ import { ref, computed, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UploadFilled, Plus } from '@element-plus/icons-vue'
 import { uploadFiles } from '@/api/upload'
+import { FILE_TYPE_RULES, FILE_TYPES } from '@/config/fileType'
 
 const props = defineProps({
   // 文件类型限制：'image' | 'video' | 'document' | 'all'
   fileType: {
     type: String,
     default: 'all',
-    validator: value => ['image', 'video', 'document', 'all'].includes(value)
+    validator: value =>
+      [
+        FILE_TYPES.IMAGE,
+        FILE_TYPES.VIDEO,
+        FILE_TYPES.DOCUMENT,
+        'all' // all 是特殊值，不在 FILE_TYPES 中
+      ].includes(value)
   },
   // 文件大小限制（MB）
   maxSize: {
@@ -133,42 +140,27 @@ const uploadTimer = ref(null)
 // 当前上传批次ID
 const currentBatchId = ref(null)
 
-// 文件类型验证规则
-const fileTypeRules = {
-  image: {
-    mimeTypes: ['image/'],
-    extensions:
-      /\.(jpg|jpeg|png|gif|webp|bmp|svg|ico|tiff|tif|heic|heif|avif|jfif|jp2|jpx|j2k|j2c|psd|raw|cr2|nef|orf|sr2)$/i,
-    accept: 'image/*',
-    defaultTip: `支持 jpg/png/gif/webp/bmp/svg/ico/tiff/heic/avif 等多种图片格式，文件大小不超过 ${props.maxSize}MB，最多${props.maxCount}个`
-  },
-  video: {
-    mimeTypes: ['video/'],
-    extensions: /\.(mp4|webm|ogg|mov|avi|wmv|flv|mkv)$/i,
-    accept: 'video/*',
-    defaultTip: `支持 mp4/webm/ogg/mov/avi/wmv/flv/mkv 格式的视频文件，文件大小不超过 ${props.maxSize}MB，最多${props.maxCount}个`
-  },
-  document: {
-    mimeTypes: ['application/pdf', 'application/msword', 'application/vnd'],
-    extensions: /\.(pdf|doc|docx|xls|xlsx|ppt|pptx)$/i,
-    accept: '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx',
-    defaultTip: `支持 pdf/doc/docx/xls/xlsx/ppt/pptx 格式的文档文件，文件大小不超过 ${props.maxSize}MB，最多${props.maxCount}个`
-  },
-  all: {
-    mimeTypes: [],
-    extensions:
-      /\.(jpg|jpeg|png|gif|webp|bmp|svg|ico|tiff|tif|heic|heif|avif|jfif|jp2|jpx|j2k|j2c|psd|raw|cr2|nef|orf|sr2|pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar|7z|tar|gz|txt|csv|json|xml|md|mp4|webm|ogg|mov|avi|wmv|flv|mkv)$/i,
-    accept: '',
-    defaultTip: `支持多种文件类型：图片、视频、文档、压缩包、文本文件，文件大小不超过 ${props.maxSize}MB，最多${props.maxCount}个`
-  }
-}
+// 文件类型验证规则（从配置文件获取，并根据 props 动态生成提示文本）
+const fileTypeRules = computed(() => {
+  const rules = { ...FILE_TYPE_RULES }
+  // 动态设置提示文本
+  Object.keys(rules).forEach(key => {
+    if (rules[key].getDefaultTip) {
+      rules[key] = {
+        ...rules[key],
+        defaultTip: rules[key].getDefaultTip(props.maxSize, props.maxCount)
+      }
+    }
+  })
+  return rules
+})
 
 // 计算accept属性
 const computedAccept = computed(() => {
   if (props.accept) {
     return props.accept
   }
-  const rule = fileTypeRules[props.fileType]
+  const rule = fileTypeRules.value[props.fileType]
   return rule ? rule.accept : ''
 })
 
@@ -177,13 +169,13 @@ const computedTip = computed(() => {
   if (props.tip) {
     return props.tip
   }
-  const rule = fileTypeRules[props.fileType]
+  const rule = fileTypeRules.value[props.fileType]
   return rule ? rule.defaultTip : ''
 })
 
 // 上传前验证
 const beforeUpload = file => {
-  const rule = fileTypeRules[props.fileType]
+  const rule = fileTypeRules.value[props.fileType]
 
   // 文件大小验证
   const isLtMaxSize = file.size / 1024 / 1024 < props.maxSize
@@ -202,9 +194,9 @@ const beforeUpload = file => {
     if (!isValidMimeType && !isValidExtension) {
       const typeName =
         {
-          image: '图片',
-          video: '视频',
-          document: '文档'
+          [FILE_TYPES.IMAGE]: '图片',
+          [FILE_TYPES.VIDEO]: '视频',
+          [FILE_TYPES.DOCUMENT]: '文档'
         }[props.fileType] || '文件'
       ElMessage.error(`只能上传${typeName}文件!`)
       return false

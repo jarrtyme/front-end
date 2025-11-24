@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { VideoPlay, VideoPause } from '@element-plus/icons-vue'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
 

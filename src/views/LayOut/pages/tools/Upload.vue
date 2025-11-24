@@ -112,6 +112,7 @@ import FileUpload from '@/components/FileUpload.vue'
 import FileFilter from './components/FileFilter.vue'
 import BatchActions from './components/BatchActions.vue'
 import FileListTable from './components/FileListTable.vue'
+import { getFileTypeFromName, FILE_TYPES } from '@/config/fileType'
 import DescriptionDialog from './components/DescriptionDialog.vue'
 import VideoPreviewDialog from './components/VideoPreviewDialog.vue'
 import logger from '@/utils/logger'
@@ -297,7 +298,7 @@ const handleSelectionChange = selection => {
 
 // 判断是否为图片或视频
 const isImageOrVideo = file => {
-  return file.fileType === 'image' || file.fileType === 'video'
+  return file.fileType === FILE_TYPES.IMAGE || file.fileType === FILE_TYPES.VIDEO
 }
 
 // 计算选中的未添加到媒体库的文件（图片或视频）
@@ -367,7 +368,7 @@ const getMediaDescriptions = row => {
 const handleAddToMediaLibrary = async row => {
   try {
     loading.value = true
-    const fileType = row.fileType === 'image' ? 'image' : 'video'
+    const fileType = row.fileType === FILE_TYPES.IMAGE ? FILE_TYPES.IMAGE : FILE_TYPES.VIDEO
     // 优先使用 path（相对路径），确保与文件系统中的路径格式一致
     // path 格式如：/uploads/images/xxx.jpg，与后端存储格式一致
     const fileUrl = row.path || row.url
@@ -726,47 +727,6 @@ const handleDelete = async row => {
   }
 }
 
-// 根据文件名获取文件类型
-const getFileTypeFromName = filename => {
-  if (!filename) return 'other'
-  const ext = filename.toLowerCase().split('.').pop()
-
-  if (
-    [
-      'jpg',
-      'jpeg',
-      'png',
-      'gif',
-      'webp',
-      'bmp',
-      'svg',
-      'ico',
-      'tiff',
-      'tif',
-      'heic',
-      'heif',
-      'avif',
-      'jfif',
-      'jp2',
-      'jpx',
-      'j2k',
-      'j2c',
-      'psd',
-      'raw',
-      'cr2',
-      'nef',
-      'orf',
-      'sr2'
-    ].includes(ext)
-  )
-    return 'image'
-  if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv', 'flv', 'mkv'].includes(ext)) return 'video'
-  if (['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) return 'document'
-  if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) return 'archive'
-  if (['txt', 'csv', 'json', 'xml', 'md'].includes(ext)) return 'text'
-  return 'other'
-}
-
 // 下载文件
 const handleDownload = row => {
   // 获取图片完整 URL
@@ -827,7 +787,7 @@ const handleBatchAddToLibrary = async () => {
 
     // 构建批量创建的数据
     const items = filesToAdd.map(file => {
-      const fileType = file.fileType === 'image' ? 'image' : 'video'
+      const fileType = file.fileType === FILE_TYPES.IMAGE ? FILE_TYPES.IMAGE : FILE_TYPES.VIDEO
       const fileUrl = file.path || file.url
       return {
         type: fileType,

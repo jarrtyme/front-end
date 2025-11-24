@@ -259,6 +259,7 @@ import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, ArrowDown } from '@element-plus/icons-vue'
 import { getUserList } from '@/api/user'
+import { getRoleTagType, getRoleLabel, isSuperAdmin, ROLES } from '@/config/role'
 import {
   getAllMenuItems,
   getUserMenuPermissions,
@@ -355,34 +356,16 @@ const transferUsers = computed(() =>
   userList.value.map(user => ({
     value: user._id || user.id,
     label: `${user.username || ''} (${user.email || ''})`,
-    disabled: user.role === 'super_admin'
+    disabled: isSuperAdmin(user.role)
   }))
 )
 
 const roleTagType = role => {
-  switch (role) {
-    case 'super_admin':
-      return 'danger'
-    case 'admin':
-      return 'warning'
-    case 'vip':
-      return 'success'
-    default:
-      return 'info'
-  }
+  return getRoleTagType(role)
 }
 
 const formatRole = (role, vipLevel) => {
-  switch (role) {
-    case 'super_admin':
-      return '超级管理员'
-    case 'admin':
-      return '管理员'
-    case 'vip':
-      return `VIP${vipLevel || ''}`
-    default:
-      return '普通用户'
-  }
+  return getRoleLabel(role, vipLevel)
 }
 
 const formatDate = value => {

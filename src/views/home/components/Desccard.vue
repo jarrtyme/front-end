@@ -1,12 +1,22 @@
 <template>
   <div class="desc-card">
     <div v-for="(item, index) in items" :key="item.id || item.url || index" class="default-item">
-      <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
+      <MediaItem
+        :item="item"
+        :alt-text="`Image ${index + 1}`"
+        video-height="var(--content-height)"
+        :video-muted="true"
+        :video-loop="true"
+        :video-autoplay="true"
+        :video-show-controls="false"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
+import MediaItem from '@/components/MediaItem.vue'
+
 const props = defineProps({
   items: {
     type: Array,
@@ -32,13 +42,5 @@ const props = defineProps({
   width: 100%;
   overflow: hidden;
   position: relative;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-  }
 }
 </style>

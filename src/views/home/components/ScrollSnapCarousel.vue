@@ -12,7 +12,20 @@
           <slot name="item" :item="item" :index="index">
             <div class="default-item-content">
               <div class="default-item">
-                <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
+                <img
+                  v-if="isImage(item)"
+                  :src="item.url"
+                  :alt="item.originalName || `Image ${index + 1}`"
+                />
+                <VideoPlayer
+                  v-else-if="isVideo(item)"
+                  :src="item.url"
+                  :height="videoHeight"
+                  :muted="true"
+                  :loop="true"
+                  :autoplay="true"
+                  :showControls="false"
+                />
               </div>
               <div class="default-item-content-text">
                 <h2>{{ item.des[0]?.text || 'ootd' }}</h2>
@@ -50,6 +63,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import VideoPlayer from '@/components/VideoPlayer.vue'
+import { isImage, isVideo } from '@/composables/useMediaType'
 
 const props = defineProps({
   // 轮播数据
@@ -94,6 +109,11 @@ const scrollContainer = ref(null)
 const currentIndex = ref(0)
 const isScrolling = ref(false)
 const itemRefs = ref([])
+
+// 计算视频高度（与图片容器一致，height 的 80%）
+const videoHeight = computed(() => {
+  return `${props.height * 0.8}px`
+})
 
 // 设置 item ref
 const setItemRef = (el, index) => {
@@ -305,6 +325,11 @@ const scrollToNext = () => {
       object-position: center;
       display: block;
     }
+    :deep(.video-player-container) {
+      width: 100%;
+      height: 100%;
+      margin-bottom: 0;
+    }
   }
 }
 
@@ -374,6 +399,4 @@ const scrollToNext = () => {
 .indicator:hover {
   background-color: rgba(0, 0, 0, 0.5);
 }
-
-
 </style>

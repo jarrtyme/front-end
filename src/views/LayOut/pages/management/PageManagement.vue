@@ -102,7 +102,7 @@
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50, 100]"
+          :page-sizes="getPageSizeOptions('standard')"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
@@ -239,11 +239,12 @@
             style="width: 150px; margin-left: 10px"
             @change="loadComponentList"
           >
-            <el-option label="轮播图" value="carousel" />
-            <el-option label="网格" value="grid" />
-            <el-option label="列表" value="list" />
-            <el-option label="滚动快照" value="scroll-snap" />
-            <el-option label="无缝滚动" value="seamless" />
+            <el-option
+              v-for="option in displayTypeOptions"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
           </el-select>
           <el-select
             v-model="componentFilterIsActive"
@@ -290,7 +291,7 @@
           <el-pagination
             v-model:current-page="componentCurrentPage"
             v-model:page-size="componentPageSize"
-            :page-sizes="[10, 20, 50]"
+            :page-sizes="getPageSizeOptions('component')"
             :total="componentTotal"
             layout="total, sizes, prev, pager, next"
             @size-change="handleComponentSizeChange"
@@ -318,6 +319,12 @@ import { Plus, Delete, Search, Refresh, ArrowUp, ArrowDown } from '@element-plus
 import { getPageList, createPage, updatePage, deletePage, getPageById } from '@/api/page'
 import { getPageComponentList } from '@/api/pageComponent'
 import ModernDialog from '@/components/ModernDialog.vue'
+import {
+  getDisplayTypeLabel,
+  getDisplayTypeTagType,
+  getDisplayTypeOptions
+} from '@/config/displayType'
+import { DEFAULT_PAGE, getDefaultPageSize, getPageSizeOptions } from '@/config/pagination'
 
 defineOptions({
   name: 'PageManagement'
@@ -327,8 +334,8 @@ const searchKeyword = ref('')
 const filterIsPublished = ref(null)
 const filterIsActive = ref(null)
 const loading = ref(false)
-const currentPage = ref(1)
-const pageSize = ref(10)
+const currentPage = ref(DEFAULT_PAGE)
+const pageSize = ref(getDefaultPageSize('list'))
 const total = ref(0)
 const pageList = ref([])
 
@@ -359,14 +366,17 @@ const editRules = {
 const componentSelectorVisible = ref(false)
 const componentLoading = ref(false)
 const availableComponents = ref([])
-const componentCurrentPage = ref(1)
-const componentPageSize = ref(10)
+const componentCurrentPage = ref(DEFAULT_PAGE)
+const componentPageSize = ref(getDefaultPageSize('component'))
 const componentTotal = ref(0)
 const componentSearchKeyword = ref('')
 const componentFilterDisplayType = ref('')
 const componentFilterIsActive = ref(null)
 const selectedComponentIds = ref([])
 const componentTableRef = ref(null)
+
+// 展示类型选项
+const displayTypeOptions = getDisplayTypeOptions()
 
 // 加载页面列表
 const loadPageList = async () => {
@@ -414,14 +424,14 @@ const handleSearch = () => {
     clearTimeout(searchTimer)
   }
   searchTimer = setTimeout(() => {
-    currentPage.value = 1
+    currentPage.value = DEFAULT_PAGE
     loadPageList()
   }, 500)
 }
 
 // 筛选处理
 const handleFilterChange = () => {
-  currentPage.value = 1
+  currentPage.value = DEFAULT_PAGE
   loadPageList()
 }
 
@@ -720,34 +730,12 @@ const handleComponentPageChange = val => {
   loadComponentList()
 }
 
-// 获取展示类型标签
-const getDisplayTypeLabel = type => {
-  const map = {
-    carousel: '轮播图',
-    grid: '网格',
-    list: '列表',
-    'scroll-snap': '滚动快照',
-    seamless: '无缝滚动'
-  }
-  return map[type] || type
-}
-
-// 获取展示类型标签类型
-const getDisplayTypeTagType = type => {
-  const map = {
-    carousel: 'primary',
-    grid: 'success',
-    list: 'info',
-    'scroll-snap': 'warning',
-    seamless: 'danger'
-  }
-  return map[type] || ''
-}
+// 使用公共配置的展示类型函数（已从 @/config/displayType 导入）
 
 // 分页处理
 const handleSizeChange = val => {
   pageSize.value = val
-  currentPage.value = 1
+  currentPage.value = DEFAULT_PAGE
   loadPageList()
 }
 

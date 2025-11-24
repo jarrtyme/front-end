@@ -124,9 +124,9 @@
                 size="large"
                 style="width: 100%"
               >
-                <el-option label="普通用户" value="user" />
-                <el-option label="VIP用户" value="vip" />
-                <el-option label="管理员" value="admin" />
+                <el-option :label="getRoleLabel(ROLES.USER)" :value="ROLES.USER" />
+                <el-option :label="getRoleLabel(ROLES.VIP)" :value="ROLES.VIP" />
+                <el-option :label="getRoleLabel(ROLES.ADMIN)" :value="ROLES.ADMIN" />
                 <!-- 注意：super_admin 不能通过注册创建 -->
               </el-select>
             </el-form-item>
@@ -153,6 +153,7 @@
 import { User, Lock, Message } from '@element-plus/icons-vue'
 import { register as registerApi } from '@/api/auth'
 import { ElMessage } from 'element-plus'
+import { ROLES, DEFAULT_ROLE, getRoleLabel } from '@/config/role'
 
 defineOptions({
   name: 'Auth'
@@ -212,7 +213,7 @@ const registerForm = reactive({
   email: '',
   password: '',
   confirmPassword: '',
-  role: 'user'
+  role: DEFAULT_ROLE
 })
 
 // 自定义验证规则：确认密码
@@ -315,7 +316,7 @@ const handleRegister = async () => {
         username: registerForm.username,
         email: registerForm.email,
         password: registerForm.password,
-        role: registerForm.role || 'user'
+        role: registerForm.role || DEFAULT_ROLE
       }
 
       // 调用注册 API

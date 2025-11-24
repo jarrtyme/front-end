@@ -4,10 +4,6 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { fileURLToPath, URL } from 'node:url'
-// 注意：已移除 unplugin-element-plus 插件
-// 因为样式已通过 SCSS 手动导入（在 src/styles/element/index.scss 中）
-// 使用该插件可能会导致样式冲突，覆盖自定义主题
-// import ElementPlus from 'unplugin-element-plus/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -36,11 +32,6 @@ export default defineConfig({
         })
       ]
     })
-    // 已移除 ElementPlus 插件，因为样式已通过 SCSS 手动导入
-    // 这样可以避免样式冲突，确保自定义主题生效
-    // ElementPlus({
-    //   useSource: true
-    // })
   ],
   resolve: {
     alias: {

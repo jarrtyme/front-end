@@ -139,7 +139,7 @@ import { getUserInfo, updateUserInfo, changePassword } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
 import AvatarCropper from '@/components/AvatarCropper.vue'
 import { uploadFiles } from '@/api/upload'
-import { log } from '@/utils/logger'
+import { getRoleLabel, isSuperAdmin, ROLES } from '@/config/role'
 
 defineOptions({
   name: 'Profile'
@@ -233,14 +233,7 @@ const loadUserInfo = async () => {
         avatar: user.avatar || '',
         username: user.username || '',
         email: user.email || '',
-        role:
-          user.role === 'super_admin'
-            ? '超级管理员'
-            : user.role === 'admin'
-              ? '管理员'
-              : user.role === 'vip'
-                ? `VIP${user.vipLevel || ''}`
-                : '普通用户',
+        role: getRoleLabel(user.role, user.vipLevel),
         createdAt: user.createdAt || '',
         lastLogin: user.lastLogin || ''
       }

@@ -62,14 +62,6 @@ class Logger {
       console.error('[ERROR]', ...args)
     }
   }
-
-  /**
-   * 设置日志级别
-   * @param {number} level - 日志级别
-   */
-  setLevel(level) {
-    this.level = level
-  }
 }
 
 // 创建单例实例

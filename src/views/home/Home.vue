@@ -2,57 +2,57 @@
   <Header />
 
   <el-main>
-    <!-- <div
-      class="header-bg"
-      style="height: var(--el-header-height-1); background-color: rgba(255, 255, 255, 0.8)"
-    ></div> -->
     <div class="home">
-      <VideoPlayer :src="getComponentItems('home5')[0]?.url || ''" text="ootd" />
+      <!-- 根据 displayType 动态渲染组件 -->
+      <template v-for="component in sortedComponents" :key="component._id || component.name">
+        <!-- carousel: 轮播图 -->
+        <ImageCarousel
+          v-if="component.displayType === DISPLAY_TYPES.CAROUSEL && component.isActive"
+          :items="getComponentItemsData(component)"
+        />
 
-      <Carousel :items="getComponentItems('home2')" />
+        <!-- grid: 网格布局 -->
+        <Desccard
+          v-else-if="component.displayType === DISPLAY_TYPES.GRID && component.isActive"
+          :items="getComponentItemsData(component)"
+        />
 
-      <ScrollSnapCarousel
-        :items="getComponentItems('home3')"
-        :height="640"
-        :itemWidth="`calc(min(max(87.5vw, 280px) - 20px, 720px))`"
-        :gap="20"
-        :showArrows="true"
-        :showIndicators="false"
-        snapAlign="start"
-      />
+        <!-- list: 列表布局 -->
+        <Bigner
+          v-else-if="component.displayType === DISPLAY_TYPES.LIST && component.isActive"
+          :items="getComponentItemsData(component)"
+        />
 
-      <ImageCarousel :items="getComponentItems('home2')" />
+        <!-- scroll-snap: 滚动快照 -->
+        <ScrollSnapCarousel
+          v-else-if="component.displayType === DISPLAY_TYPES.SCROLL_SNAP && component.isActive"
+          :items="getComponentItemsData(component)"
+          :height="640"
+          :itemWidth="`calc(min(max(87.5vw, 280px) - 20px, 720px))`"
+          :gap="20"
+          :showArrows="true"
+          :showIndicators="false"
+          snapAlign="start"
+        />
 
-      <ScrollSnapCarousel
-        :items="getComponentItems('home3')"
-        :height="640"
-        :itemWidth="`calc(min(max(87.5vw, 280px) - 20px, 420px))`"
-        :gap="20"
-        :showArrows="true"
-        :showIndicators="false"
-        snapAlign="start"
-      />
+        <!-- seamless: 无缝滚动 -->
+        <SeamlessCarousel
+          v-else-if="component.displayType === DISPLAY_TYPES.SEAMLESS && component.isActive"
+          :items="getComponentItemsData(component)"
+        />
 
-      <VideoPlayer
-        height="200px"
-        :showControls="false"
-        :src="getComponentItems('home4')[0]?.url || ''"
-        text="Echo or Style"
-      />
-
-      <Desccard :items="getComponentItems('home2')" />
-
-      <SeamlessCarousel
-        :items="[
-          ...getComponentItems('home1'),
-          ...getComponentItems('home2'),
-          ...getComponentItems('home3'),
-          ...getComponentItems('home4')
-        ]"
-      />
-      <Carousel :items="getComponentItems('home1')" />
-
-      <Bigner :items="getComponentItems('home1')" />
+        <!-- video: 视频播放器 -->
+        <VideoPlayer
+          v-else-if="component.displayType === DISPLAY_TYPES.VIDEO && component.isActive"
+          :src="getVideoSrc(component)"
+          :height="getVideoHeight(component)"
+          :text="getVideoText(component)"
+          :showControls="getVideoShowControls(component)"
+          :muted="getVideoMuted(component)"
+          :loop="getVideoLoop(component)"
+          :autoplay="getVideoAutoplay(component)"
+        />
+      </template>
     </div>
   </el-main>
 
@@ -61,25 +61,28 @@
 
 <script setup name="Home">
 import { computed, onMounted, ref } from 'vue'
-import Carousel from '@/views/Home/components/Carousel.vue'
 import ImageCarousel from '@/views/Home/components/ImageCarousel.vue'
-import VideoPlayer from '@/components/VideoPlayer.vue'
 import ScrollSnapCarousel from '@/views/Home/components/ScrollSnapCarousel.vue'
 import SeamlessCarousel from '@/views/Home/components/SeamlessCarousel.vue'
 import Desccard from '@/views/Home/components/Desccard.vue'
 import Bigner from '@/views/Home/components/Bigner.vue'
+import VideoPlayer from '@/components/VideoPlayer.vue'
 import Header from '@/views/Home/components/Header.vue'
 import Footer from '@/views/Home/components/Footer.vue'
 import { getPublicPageComponentsByIds } from '@/api/pageComponent'
-const componentMediaList = ref([])
-const componentItems = computed(() =>
-  componentMediaList.value.reduce((acc, group) => {
-    if (group?.name) {
-      acc[group.name] = group.items ?? []
-    }
-    return acc
-  }, {})
-)
+import { DISPLAY_TYPES, DEFAULT_DISPLAY_TYPE } from '@/config/displayType'
+
+// 存储组件列表
+const componentsList = ref([])
+
+// 按 order 排序后的组件列表
+const sortedComponents = computed(() => {
+  return [...componentsList.value].sort((a, b) => {
+    const orderA = a.order ?? 0
+    const orderB = b.order ?? 0
+    return orderA - orderB
+  })
+})
 
 // Fisher-Yates 洗牌算法，用于随机排列数组
 const shuffleArray = array => {
@@ -91,25 +94,93 @@ const shuffleArray = array => {
   return shuffled
 }
 
-const getComponentItems = name => {
-  const items = componentItems.value[name] || []
+// 获取组件的数据项（映射为组件需要的格式）
+const getComponentItemsData = component => {
+  if (!component || !component.items || !Array.isArray(component.items)) {
+    return []
+  }
+
+  const items = component.items.map(item => ({
+    url: item?.media?.url || '',
+    originalName: item?.media?.filename || '',
+    name: item?.media?.filename || '',
+    // 确保 descriptions 是数组格式，兼容后端返回的数据结构
+    des: Array.isArray(item?.descriptions)
+      ? item.descriptions.map(desc => (typeof desc === 'string' ? { text: desc } : desc))
+      : [],
+    descriptions: Array.isArray(item?.descriptions)
+      ? item.descriptions.map(desc => (typeof desc === 'string' ? { text: desc } : desc))
+      : [],
+    type: item?.media?.type || 'image', // 使用后端返回的 type
+    fileType: item?.media?.type || 'image',
+    media: {
+      url: item?.media?.url || '',
+      type: item?.media?.type || 'image',
+      filename: item?.media?.filename || ''
+    }
+  }))
+
   // 随机排列 items
   return shuffleArray(items)
 }
 
-const mapComponentsToMediaList = response => {
-  if (!response || !Array.isArray(response.data)) return []
-  return response.data.map(component => ({
-    name: component.name || '',
-    items: (component.items || []).map(item => ({
-      url: item?.media?.url || '',
-      des: Array.isArray(item?.descriptions) ? item.descriptions : []
-    }))
-  }))
+// 获取视频源地址（取第一个视频项）
+const getVideoSrc = component => {
+  if (!component || !component.items || !Array.isArray(component.items)) return ''
+  const videoItem = component.items.find(item => item?.media?.type === 'video')
+  return videoItem?.media?.url || component.items[0]?.media?.url || ''
 }
 
-const getFileListAll = async () => {
+// 获取视频高度（可以从 descriptions 中获取配置，或使用默认值）
+const getVideoHeight = component => {
+  // 可以从 descriptions 或 component 的其他配置中读取
+  // 暂时使用默认值
+  return '100vh'
+}
+
+// 获取视频文字（从 descriptions 中获取）
+const getVideoText = component => {
+  if (!component || !component.items || !Array.isArray(component.items)) return ''
+  const firstItem = component.items[0]
+  if (
+    firstItem?.descriptions &&
+    Array.isArray(firstItem.descriptions) &&
+    firstItem.descriptions.length > 0
+  ) {
+    return firstItem.descriptions[0]?.text || ''
+  }
+  return ''
+}
+
+// 获取视频是否显示控件
+const getVideoShowControls = component => {
+  // 默认显示控件
+  return true
+}
+
+// 获取视频是否静音
+const getVideoMuted = component => {
+  // 默认静音（自动播放需要）
+  return true
+}
+
+// 获取视频是否循环
+const getVideoLoop = component => {
+  // 默认循环
+  return true
+}
+
+// 获取视频是否自动播放
+const getVideoAutoplay = component => {
+  // 默认自动播放
+  return true
+}
+
+// 加载页面组件数据
+const loadPageComponents = async () => {
   try {
+    // 获取所有启用的组件（可以通过页面配置传入组件ID列表）
+    // 这里先使用硬编码的ID列表，后续可以改为从页面配置读取
     const response = await getPublicPageComponentsByIds([
       '691ddd42b580fac330cd7ed2',
       '691ddd1bb580fac330cd7ec6',
@@ -117,16 +188,28 @@ const getFileListAll = async () => {
       '691ddc85b580fac330cd7e4c',
       '691dda95b580fac330cd7d00'
     ])
-    componentMediaList.value = mapComponentsToMediaList(response)
-    console.log(componentMediaList.value)
+
+    if (response && response.code === 200 && Array.isArray(response.data)) {
+      // 保存完整的组件信息，包括 displayType, order, isActive
+      componentsList.value = response.data.map(component => ({
+        _id: component._id?.toString() || component._id, // 确保 ID 是字符串
+        name: component.name || '',
+        displayType: component.displayType || DEFAULT_DISPLAY_TYPE,
+        order: component.order ?? 0,
+        isActive: component.isActive !== false, // 默认为 true
+        items: Array.isArray(component.items) ? component.items : []
+      }))
+    }
+
+    console.log('加载的组件列表:', componentsList.value)
   } catch (error) {
-    console.error('加载文件列表失败:', error)
+    console.error('加载页面组件失败:', error)
     // 静默失败，不显示错误提示，因为Home页面是公开页面，可能未登录
   }
 }
 
 onMounted(() => {
-  getFileListAll()
+  loadPageComponents()
 })
 </script>
 

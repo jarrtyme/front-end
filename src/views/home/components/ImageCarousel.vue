@@ -23,7 +23,16 @@
       <el-carousel-item v-for="item in items" :key="item.id || item">
         <h3 v-if="typeof item === 'number'" text="2xl" justify="center">{{ item }}</h3>
         <div v-else-if="item.url || typeof item === 'string'" class="carousel-item-content">
-          <img :src="item.url || item" class="carousel-image" />
+          <img v-if="isImage(item)" :src="item.url || item" class="carousel-image" />
+          <VideoPlayer
+            v-else-if="isVideo(item)"
+            :src="item.url || item"
+            height="400px"
+            :muted="true"
+            :loop="true"
+            :autoplay="true"
+            :showControls="false"
+          />
         </div>
         <div v-else class="carousel-item-inner">
           <slot name="item" :item="item" />
@@ -54,6 +63,8 @@
 <script setup>
 import { ref } from 'vue'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import VideoPlayer from '@/components/VideoPlayer.vue'
+import { isImage, isVideo } from '@/composables/useMediaType'
 
 const props = defineProps({
   // 轮播图数据，可以是数字数组、图片URL数组或对象数组
@@ -244,6 +255,12 @@ const handleMouseUp = e => {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  :deep(.video-player-container) {
+    width: 100%;
+    height: 100%;
+    margin-bottom: 0;
+  }
 }
 
 .carousel-image {
@@ -311,6 +328,4 @@ const handleMouseUp = e => {
   cursor: not-allowed;
   pointer-events: none;
 }
-
-
 </style>

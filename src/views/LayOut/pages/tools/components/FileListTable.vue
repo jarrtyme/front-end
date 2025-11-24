@@ -101,7 +101,7 @@
       <el-pagination
         :current-page="pagination.page"
         :page-size="pagination.limit"
-        :page-sizes="[10, 20, 50, 100]"
+        :page-sizes="getPageSizeOptions('standard')"
         :total="pagination.total"
         layout="total, sizes, prev, pager, next, jumper"
         @current-change="handlePageChange"
@@ -113,6 +113,14 @@
 
 <script setup>
 import { Download, VideoPlay, Plus } from '@element-plus/icons-vue'
+import {
+  isImageFile,
+  isVideoFile,
+  getFileTypeFromName,
+  getFileTypeTag,
+  getFileTypeName,
+  FILE_TYPES
+} from '@/config/fileType'
 
 const props = defineProps({
   fileList: {
@@ -140,44 +148,26 @@ const emit = defineEmits([
   'open-description-dialog'
 ])
 
+import {
+  isImageFile,
+  isVideoFile,
+  getFileTypeFromName,
+  getFileTypeTag,
+  getFileTypeName,
+  FILE_TYPES
+} from '@/config/fileType'
+
 // 工具函数
 const isImage = filename => {
-  const imageExtensions = [
-    '.jpg',
-    '.jpeg',
-    '.png',
-    '.gif',
-    '.bmp',
-    '.webp',
-    '.svg',
-    '.ico',
-    '.tiff',
-    '.tif',
-    '.heic',
-    '.heif',
-    '.avif',
-    '.jfif',
-    '.jp2',
-    '.jpx',
-    '.j2k',
-    '.j2c',
-    '.psd',
-    '.raw',
-    '.cr2',
-    '.nef',
-    '.orf',
-    '.sr2'
-  ]
-  return imageExtensions.some(ext => filename.toLowerCase().endsWith(ext))
+  return isImageFile(filename)
 }
 
 const isVideo = filename => {
-  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv', '.mkv']
-  return videoExtensions.some(ext => filename.toLowerCase().endsWith(ext))
+  return isVideoFile(filename)
 }
 
 const isImageOrVideo = row => {
-  return row.fileType === 'image' || row.fileType === 'video'
+  return row.fileType === FILE_TYPES.IMAGE || row.fileType === FILE_TYPES.VIDEO
 }
 
 const getImageUrl = url => {
@@ -199,70 +189,6 @@ const formatFileSize = size => {
   } else {
     return (size / (1024 * 1024)).toFixed(2) + ' MB'
   }
-}
-
-const getFileTypeFromName = filename => {
-  if (!filename) return 'other'
-  const ext = filename.toLowerCase().split('.').pop()
-
-  if (
-    [
-      'jpg',
-      'jpeg',
-      'png',
-      'gif',
-      'webp',
-      'bmp',
-      'svg',
-      'ico',
-      'tiff',
-      'tif',
-      'heic',
-      'heif',
-      'avif',
-      'jfif',
-      'jp2',
-      'jpx',
-      'j2k',
-      'j2c',
-      'psd',
-      'raw',
-      'cr2',
-      'nef',
-      'orf',
-      'sr2'
-    ].includes(ext)
-  )
-    return 'image'
-  if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv', 'flv', 'mkv'].includes(ext)) return 'video'
-  if (['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) return 'document'
-  if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) return 'archive'
-  if (['txt', 'csv', 'json', 'xml', 'md'].includes(ext)) return 'text'
-  return 'other'
-}
-
-const getFileTypeTag = fileType => {
-  const typeMap = {
-    image: 'success',
-    video: 'primary',
-    document: 'primary',
-    archive: 'warning',
-    text: 'info',
-    other: ''
-  }
-  return typeMap[fileType] || ''
-}
-
-const getFileTypeName = fileType => {
-  const typeMap = {
-    image: '图片',
-    video: '视频',
-    document: '文档',
-    archive: '压缩包',
-    text: '文本',
-    other: '其他'
-  }
-  return typeMap[fileType] || '未知'
 }
 
 const getMediaDescriptions = row => {

@@ -37,32 +37,14 @@
         <el-table-column prop="email" label="邮箱" width="200" />
         <el-table-column prop="role" label="角色" width="120">
           <template #default="{ row }">
-            <el-tag
-              :type="
-                row.role === 'super_admin'
-                  ? 'danger'
-                  : row.role === 'admin'
-                    ? 'warning'
-                    : row.role === 'vip'
-                      ? 'success'
-                      : 'info'
-              "
-            >
-              {{
-                row.role === 'super_admin'
-                  ? '超级管理员'
-                  : row.role === 'admin'
-                    ? '管理员'
-                    : row.role === 'vip'
-                      ? `VIP${row.vipLevel || ''}`
-                      : '普通用户'
-              }}
+            <el-tag :type="getRoleTagType(row.role)">
+              {{ getRoleLabel(row.role, row.vipLevel) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="vipLevel" label="VIP等级" width="100" v-if="showVipColumn">
           <template #default="{ row }">
-            <span v-if="row.role === 'vip' && row.vipLevel">{{ row.vipLevel }}</span>
+            <span v-if="row.role === ROLES.VIP && row.vipLevel">{{ row.vipLevel }}</span>
             <span v-else>-</span>
           </template>
         </el-table-column>
@@ -94,7 +76,7 @@
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50, 100]"
+          :page-sizes="getPageSizeOptions('standard')"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
@@ -121,17 +103,17 @@
         </el-form-item>
         <el-form-item label="角色" prop="role">
           <el-select v-model="editForm.role" placeholder="请选择角色" style="width: 100%">
-            <el-option label="普通用户" value="user" />
-            <el-option label="VIP用户" value="vip" />
-            <el-option label="管理员" value="admin" />
+            <el-option :label="getRoleLabel(ROLES.USER)" :value="ROLES.USER" />
+            <el-option :label="getRoleLabel(ROLES.VIP)" :value="ROLES.VIP" />
+            <el-option :label="getRoleLabel(ROLES.ADMIN)" :value="ROLES.ADMIN" />
             <el-option
-              v-if="userStore.userRole === 'super_admin'"
-              label="超级管理员"
-              value="super_admin"
+              v-if="isSuperAdmin(userStore.userRole)"
+              :label="getRoleLabel(ROLES.SUPER_ADMIN)"
+              :value="ROLES.SUPER_ADMIN"
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="editForm.role === 'vip'" label="VIP等级" prop="vipLevel">
+        <el-form-item v-if="editForm.role === ROLES.VIP" label="VIP等级" prop="vipLevel">
           <el-input-number
             v-model="editForm.vipLevel"
             :min="0"
@@ -152,6 +134,8 @@
 import { Plus, Search } from '@element-plus/icons-vue'
 import { getUserList, deleteUser, updateUser } from '@/api/user'
 import ModernDialog from '@/components/ModernDialog.vue'
+import { getRoleTagType, getRoleLabel, isSuperAdmin, ROLES, DEFAULT_ROLE } from '@/config/role'
+import { DEFAULT_PAGE, getDefaultPageSize, getPageSizeOptions } from '@/config/pagination'
 
 defineOptions({
   name: 'Users'
@@ -161,8 +145,8 @@ const router = useRouter()
 
 const searchKeyword = ref('')
 const loading = ref(false)
-const currentPage = ref(1)
-const pageSize = ref(10)
+const currentPage = ref(DEFAULT_PAGE)
+const pageSize = ref(getDefaultPageSize('list'))
 const total = ref(0)
 const userList = ref([])
 
@@ -174,7 +158,7 @@ const editForm = ref({
   _id: '',
   username: '',
   email: '',
-  role: 'user',
+  role: ROLES.USER,
   vipLevel: 0,
   isActive: true
 })
@@ -183,7 +167,7 @@ const userStore = useUserStore()
 
 // 检查是否需要显示VIP列
 const showVipColumn = computed(() => {
-  return userList.value.some(user => user.role === 'vip')
+  return userList.value.some(user => user.role === ROLES.VIP)
 })
 
 // 表单验证规则
@@ -240,7 +224,7 @@ const handleSearch = () => {
     clearTimeout(searchTimer)
   }
   searchTimer = setTimeout(() => {
-    currentPage.value = 1
+    currentPage.value = DEFAULT_PAGE
     loadUserList()
   }, 500)
 }
@@ -254,7 +238,7 @@ const handleEdit = row => {
     _id: row._id || row.id,
     username: row.username || '',
     email: row.email || '',
-    role: row.role || 'user',
+    role: row.role || ROLES.USER,
     vipLevel: row.vipLevel || 0,
     isActive: row.isActive !== false
   }
@@ -274,7 +258,7 @@ const handleDialogClose = () => {
     _id: '',
     username: '',
     email: '',
-    role: 'user',
+    role: ROLES.USER,
     vipLevel: 0,
     isActive: true
   }

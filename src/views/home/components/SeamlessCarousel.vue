@@ -25,7 +25,20 @@
           <div v-for="(item, index) in items" :key="`${copyIndex}-${index}`" class="carousel-item">
             <slot name="item" :item="item" :index="index">
               <div v-if="item.url" class="default-item">
-                <img :src="item.url" :alt="item.originalName || `Image ${index + 1}`" />
+                <img
+                  v-if="isImage(item)"
+                  :src="item.url"
+                  :alt="item.originalName || `Image ${index + 1}`"
+                />
+                <VideoPlayer
+                  v-else-if="isVideo(item)"
+                  :src="item.url"
+                  height="150px"
+                  :muted="true"
+                  :loop="true"
+                  :autoplay="true"
+                  :showControls="false"
+                />
               </div>
               <div v-else class="default-item-text">{{ item }}</div>
             </slot>
@@ -39,6 +52,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
+import VideoPlayer from '@/components/VideoPlayer.vue'
+import { isImage, isVideo } from '@/composables/useMediaType'
 
 const props = defineProps({
   // 数据列表
@@ -388,6 +403,12 @@ defineExpose({
     object-position: center;
     display: block;
   }
+
+  :deep(.video-player-container) {
+    width: 100%;
+    height: 100%;
+    margin-bottom: 0;
+  }
 }
 
 .default-item-text {
@@ -396,5 +417,4 @@ defineExpose({
   font-size: 16px;
   color: var(--text-color, #1d1d1f);
 }
-
 </style>

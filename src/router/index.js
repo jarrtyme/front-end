@@ -1,5 +1,3 @@
-// 自动导入：createRouter, createWebHistory 等 API 已自动导入
-// 注意：在 .js 配置文件中，建议保留手动导入以确保稳定性
 import { createRouter, createWebHistory } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'

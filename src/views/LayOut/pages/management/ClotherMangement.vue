@@ -144,7 +144,7 @@
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50, 100]"
+          :page-sizes="getPageSizeOptions('standard')"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
@@ -413,6 +413,7 @@ import {
   extractImageUrlFromFile,
   isValidUploadResponse
 } from '@/utils/uploadHelper'
+import { getPageSizeOptions } from '@/config/pagination'
 
 // 响应式数据
 const clothingList = ref([])

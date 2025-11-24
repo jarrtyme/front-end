@@ -33,11 +33,12 @@
           style="width: 150px; margin-left: 10px"
           @change="handleFilterChange"
         >
-          <el-option label="轮播图" value="carousel" />
-          <el-option label="网格" value="grid" />
-          <el-option label="列表" value="list" />
-          <el-option label="滚动快照" value="scroll-snap" />
-          <el-option label="无缝滚动" value="seamless" />
+          <el-option
+            v-for="option in displayTypeOptions"
+            :key="option.value"
+            :label="option.label"
+            :value="option.value"
+          />
         </el-select>
         <el-select
           v-model="filterIsActive"
@@ -98,7 +99,7 @@
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50, 100]"
+          :page-sizes="getPageSizeOptions('standard')"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
@@ -127,11 +128,12 @@
             placeholder="请选择展示类型"
             style="width: 100%"
           >
-            <el-option label="轮播图" value="carousel" />
-            <el-option label="网格" value="grid" />
-            <el-option label="列表" value="list" />
-            <el-option label="滚动快照" value="scroll-snap" />
-            <el-option label="无缝滚动" value="seamless" />
+            <el-option
+              v-for="option in displayTypeOptions"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="排序" prop="order">
@@ -170,7 +172,7 @@
                       </template>
                     </el-image>
                     <video
-                      v-else-if="item.media.type === 'video'"
+                      v-else-if="item.media.type === FILE_TYPES.VIDEO"
                       :src="getMediaUrl(item.media.url)"
                       controls
                       style="width: 150px; height: 150px; border-radius: 4px"
@@ -316,7 +318,7 @@
           <el-pagination
             v-model:current-page="mediaCurrentPage"
             v-model:page-size="mediaPageSize"
-            :page-sizes="[12, 24, 48]"
+            :page-sizes="getPageSizeOptions('media')"
             :total="mediaTotal"
             layout="total, sizes, prev, pager, next"
             @size-change="handleMediaSizeChange"
@@ -350,6 +352,14 @@ import {
 } from '@/api/pageComponent'
 import { getMediaList } from '@/api/media'
 import ModernDialog from '@/components/ModernDialog.vue'
+import {
+  getDisplayTypeLabel,
+  getDisplayTypeTagType,
+  getDisplayTypeOptions,
+  DEFAULT_DISPLAY_TYPE
+} from '@/config/displayType'
+import { DEFAULT_PAGE, getDefaultPageSize, getPageSizeOptions } from '@/config/pagination'
+import { FILE_TYPES } from '@/config/fileType'
 
 defineOptions({
   name: 'PageComponentManagement'
@@ -359,8 +369,8 @@ const searchKeyword = ref('')
 const filterDisplayType = ref('')
 const filterIsActive = ref(null)
 const loading = ref(false)
-const currentPage = ref(1)
-const pageSize = ref(10)
+const currentPage = ref(DEFAULT_PAGE)
+const pageSize = ref(getDefaultPageSize('list'))
 const total = ref(0)
 const componentList = ref([])
 
@@ -372,7 +382,7 @@ const isEdit = ref(false)
 const editForm = ref({
   _id: '',
   name: '',
-  displayType: 'carousel',
+  displayType: DEFAULT_DISPLAY_TYPE,
   items: [],
   order: 0,
   isActive: true
@@ -388,13 +398,16 @@ const editRules = {
 const mediaSelectorVisible = ref(false)
 const mediaLoading = ref(false)
 const mediaList = ref([])
-const mediaCurrentPage = ref(1)
-const mediaPageSize = ref(12)
+const mediaCurrentPage = ref(DEFAULT_PAGE)
+const mediaPageSize = ref(getDefaultPageSize('media'))
 const mediaTotal = ref(0)
 const mediaSearchKeyword = ref('')
 const mediaFilterType = ref('')
 const selectedMedia = ref(null)
 const currentItemIndex = ref(-1)
+
+// 展示类型选项
+const displayTypeOptions = getDisplayTypeOptions()
 
 // 加载组件列表
 const loadComponentList = async () => {
@@ -442,14 +455,14 @@ const handleSearch = () => {
     clearTimeout(searchTimer)
   }
   searchTimer = setTimeout(() => {
-    currentPage.value = 1
+    currentPage.value = DEFAULT_PAGE
     loadComponentList()
   }, 500)
 }
 
 // 筛选处理
 const handleFilterChange = () => {
-  currentPage.value = 1
+  currentPage.value = DEFAULT_PAGE
   loadComponentList()
 }
 
@@ -459,7 +472,7 @@ const handleCreate = () => {
   editForm.value = {
     _id: '',
     name: '',
-    displayType: 'carousel',
+    displayType: DEFAULT_DISPLAY_TYPE,
     items: [],
     order: 0,
     isActive: true
@@ -476,11 +489,16 @@ const handleEdit = async row => {
       isEdit.value = true
       const data = response.data
       editForm.value = {
-        _id: data._id,
+        _id: data._id?.toString() || data._id, // 确保 ID 是字符串
         name: data.name || '',
-        displayType: data.displayType || 'carousel',
+        displayType: data.displayType || DEFAULT_DISPLAY_TYPE,
         items: (data.items || []).map(item => ({
-          media: item.media || {},
+          media: {
+            mediaId: item.media?.mediaId?.toString() || item.media?.mediaId || null,
+            url: item.media?.url || '',
+            type: item.media?.type || 'image',
+            filename: item.media?.filename || ''
+          },
           descriptions: (item.descriptions || []).map(desc => ({
             text: typeof desc === 'string' ? desc : desc.text || '',
             createdAt: desc.createdAt || new Date()
@@ -552,6 +570,18 @@ const confirmEdit = async () => {
         ElMessage.warning(`组件项 ${i + 1} 缺少媒体`)
         return
       }
+      // 确保 media.type 存在
+      if (!item.media.type) {
+        ElMessage.warning(`组件项 ${i + 1} 缺少媒体类型`)
+        return
+      }
+      // 确保 media.type 是有效的值
+      if (![FILE_TYPES.IMAGE, FILE_TYPES.VIDEO].includes(item.media.type)) {
+        ElMessage.warning(
+          `组件项 ${i + 1} 的媒体类型无效，必须是 ${FILE_TYPES.IMAGE} 或 ${FILE_TYPES.VIDEO}`
+        )
+        return
+      }
     }
 
     editLoading.value = true
@@ -561,13 +591,13 @@ const confirmEdit = async () => {
       displayType: editForm.value.displayType,
       items: editForm.value.items.map(item => ({
         media: {
-          mediaId: item.media.mediaId || null,
-          url: item.media.url,
-          type: item.media.type,
-          filename: item.media.filename || ''
+          mediaId: item.media?.mediaId?.toString() || item.media?.mediaId || null,
+          url: item.media?.url || '',
+          type: item.media?.type || FILE_TYPES.IMAGE, // 确保有默认值
+          filename: item.media?.filename || ''
         },
         descriptions: (item.descriptions || []).map(desc => ({
-          text: desc.text || '',
+          text: typeof desc === 'string' ? desc : desc.text || '',
           createdAt: desc.createdAt || new Date()
         }))
       })),
@@ -605,7 +635,7 @@ const handleDialogClose = () => {
   editForm.value = {
     _id: '',
     name: '',
-    displayType: 'carousel',
+    displayType: DEFAULT_DISPLAY_TYPE,
     items: [],
     order: 0,
     isActive: true
@@ -617,7 +647,12 @@ const handleDialogClose = () => {
 // 添加组件项
 const addItem = () => {
   editForm.value.items.push({
-    media: {},
+    media: {
+      mediaId: null,
+      url: '',
+      type: FILE_TYPES.IMAGE, // 默认类型
+      filename: ''
+    },
     descriptions: []
   })
 }
@@ -697,7 +732,7 @@ const handleMediaSearch = () => {
     clearTimeout(mediaSearchTimer)
   }
   mediaSearchTimer = setTimeout(() => {
-    mediaCurrentPage.value = 1
+    mediaCurrentPage.value = DEFAULT_PAGE
     loadMediaList()
   }, 500)
 }
@@ -715,11 +750,24 @@ const confirmMediaSelection = () => {
   }
 
   const item = editForm.value.items[currentItemIndex.value]
+  if (!item) {
+    ElMessage.error('组件项不存在')
+    return
+  }
+
+  // 确保 mediaId 是字符串格式
+  const mediaId = selectedMedia.value._id?.toString() || selectedMedia.value._id
+
   item.media = {
-    mediaId: selectedMedia.value._id,
-    url: selectedMedia.value.url,
-    type: selectedMedia.value.type,
+    mediaId: mediaId,
+    url: selectedMedia.value.url || '',
+    type: selectedMedia.value.type || FILE_TYPES.IMAGE, // 确保有默认值
     filename: selectedMedia.value.filename || ''
+  }
+
+  // 如果 descriptions 不存在，初始化为空数组
+  if (!item.descriptions || !Array.isArray(item.descriptions)) {
+    item.descriptions = []
   }
 
   mediaSelectorVisible.value = false
@@ -752,34 +800,12 @@ const getMediaUrl = url => {
   return `${window.location.protocol}//${window.location.host}${baseUrl}${url}`
 }
 
-// 获取展示类型标签
-const getDisplayTypeLabel = type => {
-  const map = {
-    carousel: '轮播图',
-    grid: '网格',
-    list: '列表',
-    'scroll-snap': '滚动快照',
-    seamless: '无缝滚动'
-  }
-  return map[type] || type
-}
-
-// 获取展示类型标签类型
-const getDisplayTypeTagType = type => {
-  const map = {
-    carousel: 'primary',
-    grid: 'success',
-    list: 'info',
-    'scroll-snap': 'warning',
-    seamless: 'danger'
-  }
-  return map[type] || ''
-}
+// 使用公共配置的展示类型函数（已从 @/config/displayType 导入）
 
 // 分页处理
 const handleSizeChange = val => {
   pageSize.value = val
-  currentPage.value = 1
+  currentPage.value = DEFAULT_PAGE
   loadComponentList()
 }
 
