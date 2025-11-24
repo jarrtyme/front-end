@@ -14,7 +14,7 @@
 // 1. 字体配置
 @use './fonts.scss' as *;
 
-// 2. Element Plus 主题配置
+// 2. Element Plus 主题配置（不包含 :root 变量覆盖）
 // 包含：变量覆盖（element-vars.scss）和完整样式导入
 @use './element/index.scss' as *;
 
@@ -25,3 +25,21 @@
 // 4. 全局样式
 // 包含：CSS 重置、工具类、响应式 mixin、动画等
 @use './main.scss' as *;
+
+// 5. Element Plus CSS 变量覆盖（必须在 main.scss 之后，确保不被响应式样式覆盖）
+// 在全局样式和响应式样式之后重新定义，确保优先级最高
+@use '../variables.scss' as vars;
+
+:root {
+  // Element Plus 字体配置（继承全局 SF Pro）
+  --el-font-family: var(--app-font-family, #{vars.$font-family-base}) !important;
+  // Element Plus 圆角配置（使用项目的 $border-radius）
+  --el-border-radius-base: #{vars.$border-radius} !important;
+  // Element Plus 背景色配置
+  --el-bg-color-page: #fff !important;
+  // Element Plus 阴影配置
+  --el-box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+  --el-dialog-box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+}

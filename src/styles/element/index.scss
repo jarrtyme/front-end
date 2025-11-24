@@ -17,20 +17,5 @@
 // 导入 Element Plus 的所有组件样式，使用上面覆盖的变量
 @use 'element-plus/theme-chalk/src/index.scss' as *;
 
-// 3. CSS 自定义属性覆盖
-// 在 Element Plus 样式加载后定义，确保覆盖 Element Plus 的默认 CSS 变量
-// 注意：由于某些变量（如 $border-radius-base）没有使用 !default，无法通过 SCSS 变量覆盖
-// 因此使用 CSS 自定义属性来覆盖
-:root {
-  // Element Plus 字体配置（继承全局 SF Pro）
-  --el-font-family: var(--app-font-family, #{vars.$font-family-base}) !important;
-  // Element Plus 圆角配置（使用项目的 $border-radius）
-  --el-border-radius-base: #{vars.$border-radius} !important;
-  // Element Plus 背景色配置
-  --el-bg-color-page: #fff !important;
-  // Element Plus 阴影配置
-  --el-box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
-  --el-dialog-box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
-}
+// 注意：CSS 自定义属性覆盖已移到 index.scss 的最后，确保在所有响应式样式之后加载
+// 这样可以避免被 main.scss 中的响应式 :root 样式覆盖
