@@ -157,7 +157,6 @@
     <ModernDialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="800px"
       :close-on-click-modal="false"
       confirm-text="确定"
       :confirm-loading="submitting"
@@ -354,7 +353,7 @@
     </ModernDialog>
 
     <!-- 统计信息对话框 -->
-    <ModernDialog v-model="statsDialogVisible" title="库存统计" width="600px">
+    <ModernDialog v-model="statsDialogVisible" title="库存统计">
       <template #footer>
         <div></div>
       </template>

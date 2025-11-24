@@ -2,7 +2,6 @@
   <ModernDialog
     :model-value="visible"
     :title="title"
-    width="800px"
     @update:model-value="handleUpdateVisible"
     @close="handleClose"
   >

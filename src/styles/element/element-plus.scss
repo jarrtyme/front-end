@@ -27,12 +27,6 @@
 // 我们需要在组件上直接覆盖这些变量
 
 .el-overlay-dialog {
-  box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.35),
-    0 10px 30px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(0, 0, 0, 0.08) !important;
-
-  backdrop-filter: blur(20px);
 }
 .el-overlay {
   background-color: rgba(0, 0, 0, 0.5);

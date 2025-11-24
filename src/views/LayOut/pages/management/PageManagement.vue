@@ -115,7 +115,6 @@
     <ModernDialog
       v-model="editDialogVisible"
       :title="isEdit ? '编辑页面' : '新增页面'"
-      width="800px"
       :close-on-click-modal="false"
       confirm-text="确定"
       :confirm-loading="editLoading"
@@ -212,11 +211,13 @@
     </ModernDialog>
 
     <!-- 组件选择对话框 -->
-    <el-dialog
+    <ModernDialog
       v-model="componentSelectorVisible"
       title="选择组件"
-      width="800px"
       :close-on-click-modal="false"
+      :confirm-loading="componentLoading"
+      confirm-text="确定"
+      @confirm="confirmComponentSelection"
     >
       <div class="component-selector">
         <div class="component-filter">
@@ -299,11 +300,16 @@
       </div>
       <template #footer>
         <el-button @click="componentSelectorVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmComponentSelection">
+        <el-button
+          type="primary"
+          :loading="componentLoading"
+          :disabled="selectedComponentIds.length === 0"
+          @click="confirmComponentSelection"
+        >
           确定 ({{ selectedComponentIds.length }})
         </el-button>
       </template>
-    </el-dialog>
+    </ModernDialog>
   </div>
 </template>
 

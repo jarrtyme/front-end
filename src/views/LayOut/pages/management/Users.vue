@@ -107,7 +107,6 @@
     <ModernDialog
       v-model="editDialogVisible"
       title="编辑用户"
-      width="500px"
       confirm-text="确定"
       :confirm-loading="editLoading"
       @confirm="confirmEdit"

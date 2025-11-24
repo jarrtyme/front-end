@@ -111,7 +111,6 @@
     <ModernDialog
       v-model="editDialogVisible"
       :title="isEdit ? '编辑组件' : '新增组件'"
-      width="900px"
       :close-on-click-modal="false"
       confirm-text="确定"
       :confirm-loading="editLoading"
@@ -248,11 +247,13 @@
     </ModernDialog>
 
     <!-- 媒体选择对话框 -->
-    <el-dialog
+    <ModernDialog
       v-model="mediaSelectorVisible"
       title="选择媒体"
-      width="800px"
       :close-on-click-modal="false"
+      :confirm-loading="mediaLoading"
+      confirm-text="确定"
+      @confirm="confirmMediaSelection"
     >
       <div class="media-selector">
         <div class="media-filter">
@@ -325,11 +326,16 @@
       </div>
       <template #footer>
         <el-button @click="mediaSelectorVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmMediaSelection" :disabled="!selectedMedia">
+        <el-button
+          type="primary"
+          :loading="mediaLoading"
+          :disabled="!selectedMedia"
+          @click="confirmMediaSelection"
+        >
           确定
         </el-button>
       </template>
-    </el-dialog>
+    </ModernDialog>
   </div>
 </template>
 

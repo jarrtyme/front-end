@@ -109,12 +109,12 @@ const isOverlayVisible = computed(() => {
 
 // 所有菜单项配置（完整列表）
 const allMenuItems = [
-  {
-    key: 'dashboard',
-    label: '仪表盘',
-    path: '/admin/dashboard',
-    children: []
-  },
+  // {
+  //   key: 'dashboard',
+  //   label: '仪表盘',
+  //   path: '/admin/dashboard',
+  //   children: []
+  // },
   {
     key: 'management',
     label: '管理',
@@ -306,7 +306,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .apple-layout {
   min-height: 100vh;
-  background-color: #f5f5f7;
+  background-color: var(--el-bg-color-page);
 }
 
 .apple-header {
@@ -316,12 +316,12 @@ onMounted(() => {
   background-color: rgba(255, 255, 255, 0.463);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  // border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 
   &.header-scrolled {
     background-color: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    // box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -358,7 +358,6 @@ onMounted(() => {
 }
 
 .nav-item {
-  position: relative;
   margin: 0 8px;
 
   &.active {
@@ -397,27 +396,26 @@ onMounted(() => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: top center;
   z-index: 99999;
+  width: 100%;
   &.show {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    margin-top: 8px;
   }
 }
 
 .dropdown-content {
   background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-radius: 12px;
-  padding: 8px 0;
-  min-width: 240px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  padding: 8px 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-auto-rows: minmax(fit-content, auto);
+  gap: 12px;
 }
 
 .dropdown-item {
-  padding: 10px 20px;
+  padding: 5px;
   cursor: pointer;
   transition: background-color 0.2s;
 
@@ -426,7 +424,7 @@ onMounted(() => {
   }
 
   &.active {
-    background-color: rgba(0, 0, 0, 0.05);
+    // background-color: rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -436,6 +434,7 @@ onMounted(() => {
     font-weight: 400;
     color: #1d1d1f;
     margin-bottom: 2px;
+    font-weight: 600;
   }
 
   .dropdown-item-desc {
@@ -480,6 +479,7 @@ onMounted(() => {
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(-8px);
+  width: 100%;
 
   &.show {
     opacity: 1;
@@ -540,8 +540,8 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(2px);
+  background: rgba(232, 232, 237, 0.4);
+  backdrop-filter: blur(8px);
   z-index: 10;
 }
 

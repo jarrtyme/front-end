@@ -190,7 +190,7 @@
     </el-row>
 
     <!-- 模板对话框 -->
-    <el-dialog
+    <ModernDialog
       v-model="templateDialog.visible"
       :title="templateDialog.template ? '编辑模板' : '新建模板'"
       width="420px"
@@ -219,10 +219,10 @@
           确定
         </el-button>
       </template>
-    </el-dialog>
+    </ModernDialog>
 
     <!-- 批量应用对话框 -->
-    <el-dialog
+    <ModernDialog
       v-model="batchDialog.visible"
       title="批量应用模板"
       width="520px"
@@ -249,7 +249,7 @@
           应用
         </el-button>
       </template>
-    </el-dialog>
+    </ModernDialog>
   </div>
 </template>
 
@@ -269,6 +269,7 @@ import {
   deleteMenuTemplate,
   applyMenuTemplate
 } from '@/api/menuPermission'
+import ModernDialog from '@/components/ModernDialog.vue'
 
 defineOptions({
   name: 'MenuPermissionManager'

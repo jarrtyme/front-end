@@ -1,5 +1,5 @@
 <template>
-  <el-dialog
+  <ModernDialog
     v-model="visible"
     title="头像裁剪"
     width="600px"
@@ -32,7 +32,7 @@
       <el-button @click="handleClose">取消</el-button>
       <el-button type="primary" :loading="cropping" @click="handleCrop">确定</el-button>
     </template>
-  </el-dialog>
+  </ModernDialog>
 </template>
 
 <script setup>
@@ -40,6 +40,7 @@ import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { RefreshLeft, RefreshRight, ZoomIn, ZoomOut, Refresh } from '@element-plus/icons-vue'
 import VuePictureCropper, { cropper } from 'vue-picture-cropper'
+import ModernDialog from '@/components/ModernDialog.vue'
 
 const props = defineProps({
   modelValue: {

@@ -1,16 +1,24 @@
 <template>
-  <div class="app-container">
-    <router-view v-slot="{ Component, route }">
-      <keep-alive :include="keepAliveRoutes">
-        <component :is="Component" :key="route.fullPath" />
-      </keep-alive>
-    </router-view>
-  </div>
+  <router-view v-slot="{ Component, route }">
+    <keep-alive :include="keepAliveRoutes">
+      <component :is="Component" :key="route.fullPath" />
+    </keep-alive>
+  </router-view>
 </template>
 
 <script setup>
 import { useSrcean } from '@/hooks/useSrcean'
 const { scale } = useSrcean()
+
+watch(
+  scale,
+  value => {
+    if (document?.body) {
+      document.body.style.zoom = value
+    }
+  },
+  { immediate: true }
+)
 
 // 自动导入：computed, useRoute, useRouter 等 API 已自动导入，无需手动 import
 
@@ -29,10 +37,4 @@ const keepAliveRoutes = computed(() => {
 })
 </script>
 
-<style lang="scss">
-.app-container {
-  zoom: v-bind(scale);
-  height: 100%;
-  width: 100%;
-}
-</style>
+<style lang="scss"></style>

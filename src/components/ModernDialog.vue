@@ -92,7 +92,7 @@ const props = defineProps({
   // 对话框宽度
   width: {
     type: [String, Number],
-    default: '600px'
+    default: '90%'
   },
   // 主标题
   title: {

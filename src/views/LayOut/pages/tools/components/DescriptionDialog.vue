@@ -2,7 +2,6 @@
   <ModernDialog
     :model-value="visible"
     :title="title"
-    width="600px"
     :confirm-text="confirmText"
     :confirm-loading="loading"
     @confirm="handleConfirm"
