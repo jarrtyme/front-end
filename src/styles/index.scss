@@ -28,7 +28,7 @@
 
 // 5. Element Plus CSS 变量覆盖（必须在 main.scss 之后，确保不被响应式样式覆盖）
 // 在全局样式和响应式样式之后重新定义，确保优先级最高
-@use '../variables.scss' as vars;
+@use './variables.scss' as vars;
 
 :root {
   // Element Plus 字体配置（继承全局 SF Pro）
