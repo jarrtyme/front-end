@@ -28,8 +28,10 @@
                 />
               </div>
               <div class="default-item-content-text">
-                <h2>{{ item.des[0]?.text || 'ootd' }}</h2>
-                <p>{{ item.des[1]?.text || 'Your Style, Your Echo.' }}</p>
+                <template v-for="(desc, index) in item.des" :key="index">
+                  <h2 v-if="index === 0">{{ desc.text }}</h2>
+                  <p v-else>{{ desc.text }}</p>
+                </template>
               </div>
             </div>
           </slot>
@@ -145,7 +147,7 @@ const computedItemWidth = computed(() => {
     return `calc(min(max(87.5vw, 280px) - ${props.gap}px, 480px))`
   } else {
     // 宽模式：最大宽度 720px（默认）
-    return `calc(min(max(87.5vw, 280px) - ${props.gap}px, 720px))`
+    return `calc(min(calc(max(min(640px, 87.5vw), 640px)) - ${props.gap}px, 640px))`
   }
 })
 
@@ -323,10 +325,7 @@ const scrollToNext = () => {
   scroll-snap-stop: always;
   height: 100%;
   margin-top: var(--gutter-width);
-
-  &:first-child {
-    padding-left: calc(var(--double-edge-border-width) + var(--gutter-width));
-  }
+  padding-left: calc(var(--double-edge-border-width) + var(--gutter-width));
 
   &:last-child {
     padding-right: calc(var(--double-edge-border-width) + var(--gutter-width));
@@ -339,7 +338,6 @@ const scrollToNext = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   .default-item-content-text {
     display: flex;
     flex-direction: column;

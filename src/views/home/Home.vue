@@ -1,10 +1,17 @@
 <template>
-  <Header />
+  <template v-if="headerComponents.length">
+    <Header
+      v-for="component in headerComponents"
+      :key="component._id || component.name"
+      :items="getComponentItemsData(component)"
+      :link="component.link"
+    />
+  </template>
 
   <el-main>
     <div class="home">
       <!-- 根据 displayType 动态渲染组件 -->
-      <template v-for="component in sortedComponents" :key="component._id || component.name">
+      <template v-for="component in contentComponents" :key="component._id || component.name">
         <!-- carousel: 轮播图 -->
         <ImageCarousel
           v-if="component.displayType === DISPLAY_TYPES.CAROUSEL && component.isActive"
@@ -41,6 +48,13 @@
           :items="getComponentItemsData(component)"
         />
 
+        <!-- detail: 详情描述 -->
+        <ComponentDetail
+          v-else-if="component.displayType === DISPLAY_TYPES.DETAIL && component.isActive"
+          :items="getComponentItemsData(component)"
+          :link="component.link"
+        />
+
         <!-- video: 视频播放器 -->
         <VideoPlayer
           v-else-if="component.displayType === DISPLAY_TYPES.VIDEO && component.isActive"
@@ -56,24 +70,47 @@
     </div>
   </el-main>
 
-  <Footer />
+  <template v-if="footerComponents.length">
+    <Footer
+      v-for="component in footerComponents"
+      :key="component._id || component.name"
+      :items="getComponentItemsData(component)"
+      :link="component.link"
+    />
+  </template>
+  <Footer v-else />
 </template>
 
 <script setup name="Home">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import ImageCarousel from '@/views/Home/components/ImageCarousel.vue'
 import ScrollSnapCarousel from '@/views/Home/components/ScrollSnapCarousel.vue'
 import SeamlessCarousel from '@/views/Home/components/SeamlessCarousel.vue'
 import Desccard from '@/views/Home/components/Desccard.vue'
 import Bigner from '@/views/Home/components/Bigner.vue'
 import VideoPlayer from '@/components/VideoPlayer.vue'
+import ComponentDetail from '@/views/Home/components/ComponentDetail.vue'
 import Header from '@/views/Home/components/Header.vue'
 import Footer from '@/views/Home/components/Footer.vue'
 import { getPublicPageComponentsByIds } from '@/api/pageComponent'
+import { getPublicPageById } from '@/api/page'
 import { DISPLAY_TYPES, DEFAULT_DISPLAY_TYPE } from '@/config/displayType'
+import { useRoute, useRouter } from 'vue-router'
 
 // 存储组件列表
 const componentsList = ref([])
+const isLoadingComponents = ref(false)
+const loadError = ref('')
+
+const DEFAULT_PAGE_ID = '69184f3ac478e22e4de2698d'
+
+// 路由实例，用于读取 query 中的页面 id
+const route = useRoute()
+const router = useRouter()
+
+const currentPageId = computed(() => {
+  return (route.query?.id || '').toString().trim() || DEFAULT_PAGE_ID
+})
 
 // 按 order 排序后的组件列表
 const sortedComponents = computed(() => {
@@ -83,6 +120,26 @@ const sortedComponents = computed(() => {
     return orderA - orderB
   })
 })
+
+const headerComponents = computed(() =>
+  sortedComponents.value.filter(
+    component => component.displayType === DISPLAY_TYPES.HEADER && component.isActive
+  )
+)
+
+const footerComponents = computed(() =>
+  sortedComponents.value.filter(
+    component => component.displayType === DISPLAY_TYPES.FOOTER && component.isActive
+  )
+)
+
+const contentComponents = computed(() =>
+  sortedComponents.value.filter(
+    component =>
+      ![DISPLAY_TYPES.HEADER, DISPLAY_TYPES.FOOTER].includes(component.displayType) &&
+      component.isActive
+  )
+)
 
 // Fisher-Yates 洗牌算法，用于随机排列数组
 const shuffleArray = array => {
@@ -192,40 +249,54 @@ const getScrollSnapWidthMode = component => {
 }
 
 // 加载页面组件数据
-const loadPageComponents = async () => {
-  try {
-    // 获取所有启用的组件（可以通过页面配置传入组件ID列表）
-    // 这里先使用硬编码的ID列表，后续可以改为从页面配置读取
-    const response = await getPublicPageComponentsByIds([
-      '691ddd42b580fac330cd7ed2',
-      '691ddcfdb580fac330cd7eb6',
-      '691ddc85b580fac330cd7e4c',
-      '691dda95b580fac330cd7d00',
-      '691ddd1bb580fac330cd7ec6'
-    ])
+const loadPageComponents = async pageId => {
+  if (!pageId) {
+    componentsList.value = []
+    return
+  }
 
-    if (response && response.code === 200 && Array.isArray(response.data)) {
-      // 保存完整的组件信息，包括 displayType, order, isActive, widthMode
-      componentsList.value = response.data.map(component => ({
+  isLoadingComponents.value = true
+  loadError.value = ''
+  try {
+    const response = await getPublicPageById(pageId)
+    if (response && response.code === 200 && response.data) {
+      componentsList.value = (response.data.componentIds || []).map(component => ({
         _id: component._id?.toString() || component._id, // 确保 ID 是字符串
         name: component.name || '',
         displayType: component.displayType || DEFAULT_DISPLAY_TYPE,
         order: component.order ?? 0,
         isActive: component.isActive !== false, // 默认为 true
         items: Array.isArray(component.items) ? component.items : [],
-        widthMode: component.widthMode || 'wide' // 滚动快照宽度模式，默认为 'wide'
+        widthMode: component.widthMode || 'wide',
+        link: component.link || ''
       }))
+      return
     }
-
-    console.log('加载的组件列表:', componentsList.value)
+    componentsList.value = []
+    loadError.value = response?.message || '未找到对应页面配置'
   } catch (error) {
     console.error('加载页面组件失败:', error)
-    // 静默失败，不显示错误提示，因为Home页面是公开页面，可能未登录
+    componentsList.value = []
+    loadError.value = error?.message || '加载页面组件失败'
+  } finally {
+    isLoadingComponents.value = false
   }
 }
 
+// 根据 URL 参数变化重新加载
+watch(
+  currentPageId,
+  newId => {
+    loadPageComponents(newId)
+  },
+  { immediate: true }
+)
+
+// 如果访问时没有 id 且存在默认值，保持 URL 一致
 onMounted(() => {
-  loadPageComponents()
+  if (!route.query.id && DEFAULT_PAGE_ID) {
+    router.replace({ query: { ...route.query, id: DEFAULT_PAGE_ID } })
+  }
 })
 </script>
 

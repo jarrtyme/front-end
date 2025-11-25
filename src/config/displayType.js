@@ -10,7 +10,10 @@ export const DISPLAY_TYPES = {
   LIST: 'list',
   SCROLL_SNAP: 'scroll-snap',
   SEAMLESS: 'seamless',
-  VIDEO: 'video'
+  VIDEO: 'video',
+  DETAIL: 'detail',
+  HEADER: 'header',
+  FOOTER: 'footer'
 }
 
 // 展示类型配置映射
@@ -44,6 +47,21 @@ export const DISPLAY_TYPE_CONFIG = {
     label: '视频播放器',
     tagType: 'primary',
     component: 'VideoPlayer'
+  },
+  [DISPLAY_TYPES.DETAIL]: {
+    label: '详情',
+    tagType: 'info',
+    component: 'ComponentDetail'
+  },
+  [DISPLAY_TYPES.HEADER]: {
+    label: '头部',
+    tagType: 'info',
+    component: 'Header'
+  },
+  [DISPLAY_TYPES.FOOTER]: {
+    label: '足部',
+    tagType: 'info',
+    component: 'Footer'
   }
 }
 

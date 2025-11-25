@@ -61,6 +61,14 @@
         :empty-text="loading ? '加载中...' : '暂无组件数据'"
       >
         <el-table-column prop="name" label="组件名称" width="200" />
+        <el-table-column prop="link" label="链接" min-width="220">
+          <template #default="{ row }">
+            <el-link v-if="row.link" :href="row.link" type="primary" target="_blank">
+              {{ row.link }}
+            </el-link>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="displayType" label="展示类型" width="120">
           <template #default="{ row }">
             <el-tag :type="getDisplayTypeTagType(row.displayType)">
@@ -121,6 +129,9 @@
       <el-form :model="editForm" :rules="editRules" ref="editFormRef" label-width="100px">
         <el-form-item label="组件名称" prop="name">
           <el-input v-model="editForm.name" placeholder="请输入组件名称" />
+        </el-form-item>
+        <el-form-item label="组件链接" prop="link">
+          <el-input v-model="editForm.link" placeholder="请输入跳转链接（可选）" clearable />
         </el-form-item>
         <el-form-item label="展示类型" prop="displayType">
           <el-select
@@ -393,6 +404,7 @@ const isEdit = ref(false)
 const editForm = ref({
   _id: '',
   name: '',
+  link: '',
   displayType: DEFAULT_DISPLAY_TYPE,
   items: [],
   order: 0,
@@ -420,6 +432,7 @@ const currentItemIndex = ref(-1)
 
 // 展示类型选项
 const displayTypeOptions = getDisplayTypeOptions()
+const MEDIA_OPTIONAL_TYPES = [DISPLAY_TYPES.HEADER, DISPLAY_TYPES.FOOTER]
 
 // 加载组件列表
 const loadComponentList = async () => {
@@ -484,6 +497,7 @@ const handleCreate = () => {
   editForm.value = {
     _id: '',
     name: '',
+    link: '',
     displayType: DEFAULT_DISPLAY_TYPE,
     items: [],
     order: 0,
@@ -504,6 +518,7 @@ const handleEdit = async row => {
       editForm.value = {
         _id: data._id?.toString() || data._id, // 确保 ID 是字符串
         name: data.name || '',
+        link: data.link || '',
         displayType: data.displayType || DEFAULT_DISPLAY_TYPE,
         items: (data.items || []).map(item => ({
           media: {
@@ -577,24 +592,27 @@ const confirmEdit = async () => {
       return
     }
 
-    // 验证每个组件项都有媒体
-    for (let i = 0; i < editForm.value.items.length; i++) {
-      const item = editForm.value.items[i]
-      if (!item.media || !item.media.url) {
-        ElMessage.warning(`组件项 ${i + 1} 缺少媒体`)
-        return
-      }
-      // 确保 media.type 存在
-      if (!item.media.type) {
-        ElMessage.warning(`组件项 ${i + 1} 缺少媒体类型`)
-        return
-      }
-      // 确保 media.type 是有效的值
-      if (![FILE_TYPES.IMAGE, FILE_TYPES.VIDEO].includes(item.media.type)) {
-        ElMessage.warning(
-          `组件项 ${i + 1} 的媒体类型无效，必须是 ${FILE_TYPES.IMAGE} 或 ${FILE_TYPES.VIDEO}`
-        )
-        return
+    const requiresMedia = !MEDIA_OPTIONAL_TYPES.includes(editForm.value.displayType)
+    if (requiresMedia) {
+      // 验证每个组件项都有媒体
+      for (let i = 0; i < editForm.value.items.length; i++) {
+        const item = editForm.value.items[i]
+        if (!item.media || !item.media.url) {
+          ElMessage.warning(`组件项 ${i + 1} 缺少媒体`)
+          return
+        }
+        // 确保 media.type 存在
+        if (!item.media.type) {
+          ElMessage.warning(`组件项 ${i + 1} 缺少媒体类型`)
+          return
+        }
+        // 确保 media.type 是有效的值
+        if (![FILE_TYPES.IMAGE, FILE_TYPES.VIDEO].includes(item.media.type)) {
+          ElMessage.warning(
+            `组件项 ${i + 1} 的媒体类型无效，必须是 ${FILE_TYPES.IMAGE} 或 ${FILE_TYPES.VIDEO}`
+          )
+          return
+        }
       }
     }
 
@@ -602,6 +620,7 @@ const confirmEdit = async () => {
 
     const submitData = {
       name: editForm.value.name.trim(),
+      link: editForm.value.link ? editForm.value.link.trim() : '',
       displayType: editForm.value.displayType,
       items: editForm.value.items.map(item => ({
         media: {
@@ -654,6 +673,7 @@ const handleDialogClose = () => {
   editForm.value = {
     _id: '',
     name: '',
+    link: '',
     displayType: DEFAULT_DISPLAY_TYPE,
     items: [],
     order: 0,

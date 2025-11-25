@@ -376,6 +376,7 @@ defineExpose({
   display: flex;
   flex-shrink: 0;
   gap: var(--gutter-width);
+  margin-right: var(--gutter-width);
 
   .seamless-carousel.is-horizontal & {
     flex-direction: row;
