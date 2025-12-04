@@ -112,19 +112,31 @@
           </template>
         </el-table-column>
 
+        <el-table-column label="绑定页面" width="150" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="row.pageId" type="success" size="small">
+              {{ getBoundPageName(row) }}
+            </el-tag>
+            <span v-else style="color: #909399">未绑定</span>
+          </template>
+        </el-table-column>
+
         <el-table-column label="创建时间" width="180" align="center">
           <template #default="{ row }">
             {{ formatDate(row.createdAt) }}
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="250" align="center" fixed="right">
+        <el-table-column label="操作" width="320" align="center" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" size="small" :icon="Edit" @click="handleEdit(row)">
               编辑
             </el-button>
             <el-button type="success" size="small" :icon="Plus" @click="handleRestock(row)">
               补货
+            </el-button>
+            <el-button type="warning" size="small" :icon="Link" @click="handleBindPages(row)">
+              绑定页面
             </el-button>
             <el-button
               type="danger"
@@ -166,7 +178,7 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="货号" prop="itemNumber">
-              <el-input v-model="formData.itemNumber" placeholder="请输入货号" :disabled="isEdit" />
+              <el-input v-model="formData.itemNumber" placeholder="请输入货号" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -318,6 +330,45 @@
             </el-form-item>
           </el-col>
         </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="24">
+            <el-form-item label="绑定页面">
+              <el-select
+                v-model="formData.pageId"
+                filterable
+                clearable
+                placeholder="请选择页面（只能绑定一个）"
+                style="width: 100%"
+                :loading="pageListLoading"
+                @focus="loadPageListForSelect"
+              >
+                <el-option
+                  v-for="page in availablePages"
+                  :key="page._id"
+                  :label="page.name"
+                  :value="page._id"
+                  :disabled="!page.isActive"
+                >
+                  <div style="display: flex; justify-content: space-between; align-items: center">
+                    <span>{{ page.name }}</span>
+                    <div style="display: flex; gap: 8px; align-items: center">
+                      <el-tag :type="page.isActive ? 'success' : 'danger'" size="small">
+                        {{ page.isActive ? '启用' : '禁用' }}
+                      </el-tag>
+                      <el-tag :type="page.isPublished ? 'primary' : 'info'" size="small">
+                        {{ page.isPublished ? '已发布' : '未发布' }}
+                      </el-tag>
+                    </div>
+                  </div>
+                </el-option>
+              </el-select>
+              <div style="font-size: 12px; color: #909399; margin-top: 5px">
+                绑定的页面将用于展示该服装（只能绑定一个页面）
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
     </ModernDialog>
 
@@ -391,6 +442,67 @@
         </el-descriptions-item>
       </el-descriptions>
     </ModernDialog>
+
+    <!-- 绑定页面对话框 -->
+    <ModernDialog
+      v-model="bindPageDialogVisible"
+      title="绑定页面"
+      width="600px"
+      :close-on-click-modal="false"
+      confirm-text="确定"
+      :confirm-loading="bindingPage"
+      @confirm="handleBindPageSubmit"
+    >
+      <div v-loading="loadingBoundPage">
+        <div style="margin-bottom: 20px">
+          <el-input
+            v-model="pageSearchKeyword"
+            placeholder="搜索页面名称"
+            clearable
+            style="width: 100%"
+            @input="handlePageSearch"
+          >
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
+        </div>
+        <el-select
+          v-model="selectedPageId"
+          filterable
+          clearable
+          placeholder="请选择页面（只能绑定一个）"
+          style="width: 100%"
+          :loading="pageListLoading"
+        >
+          <el-option
+            v-for="page in filteredAvailablePages"
+            :key="page._id"
+            :label="page.name"
+            :value="page._id"
+            :disabled="!page.isActive"
+          >
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <span>{{ page.name }}</span>
+              <div style="display: flex; gap: 8px; align-items: center">
+                <el-tag :type="page.isActive ? 'success' : 'danger'" size="small">
+                  {{ page.isActive ? '启用' : '禁用' }}
+                </el-tag>
+                <el-tag :type="page.isPublished ? 'primary' : 'info'" size="small">
+                  {{ page.isPublished ? '已发布' : '未发布' }}
+                </el-tag>
+              </div>
+            </div>
+          </el-option>
+        </el-select>
+        <div v-if="currentBoundPage" style="margin-top: 20px">
+          <div style="font-weight: 600; margin-bottom: 10px">当前已绑定的页面：</div>
+          <el-tag style="margin-bottom: 8px" closable @close="removeBoundPage">
+            {{ currentBoundPage.name }}
+          </el-tag>
+        </div>
+      </div>
+    </ModernDialog>
   </div>
 </template>
 
@@ -402,10 +514,22 @@ import {
   updateClothing,
   removeClothing,
   restockClothing,
-  getClothingStats
+  getClothingStats,
+  bindPage,
+  getBoundPage
 } from '@/api/clothing'
+import { getPageList } from '@/api/page'
 import FileUpload from '@/components/FileUpload.vue'
-import { Search, Refresh, Delete, Edit, Plus, Picture, DataAnalysis } from '@element-plus/icons-vue'
+import {
+  Search,
+  Refresh,
+  Delete,
+  Edit,
+  Plus,
+  Picture,
+  DataAnalysis,
+  Link
+} from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ModernDialog from '@/components/ModernDialog.vue'
 import {
@@ -414,6 +538,7 @@ import {
   isValidUploadResponse
 } from '@/utils/uploadHelper'
 import { getPageSizeOptions } from '@/config/pagination'
+import { getDisplayTypeLabel, getDisplayTypeTagType } from '@/config/displayType'
 
 // 响应式数据
 const clothingList = ref([])
@@ -444,7 +569,8 @@ const formData = ref({
   purchaseQuantity: 0,
   remainingQuantity: 0,
   shippingCost: 0,
-  returnCost: 0
+  returnCost: 0,
+  pageId: null
 })
 
 // 图片上传相关
@@ -520,6 +646,17 @@ const restockFormData = ref({
 // 统计信息对话框
 const statsDialogVisible = ref(false)
 const statsData = ref(null)
+
+// 绑定页面对话框相关
+const bindPageDialogVisible = ref(false)
+const bindingPage = ref(false)
+const loadingBoundPage = ref(false)
+const currentBindClothingId = ref(null)
+const currentBoundPage = ref(null)
+const availablePages = ref([])
+const pageListLoading = ref(false)
+const pageSearchKeyword = ref('')
+const selectedPageId = ref(null)
 
 // 表单验证规则
 const formRules = {
@@ -607,6 +744,15 @@ const formatDate = dateString => {
   })
 }
 
+// 获取绑定的页面名称
+const getBoundPageName = row => {
+  if (!row.pageId) return ''
+  if (typeof row.pageId === 'object' && row.pageId.name) {
+    return row.pageId.name
+  }
+  return '已绑定'
+}
+
 // 加载服装列表
 const loadClothingList = async () => {
   loading.value = true
@@ -655,7 +801,8 @@ const handleCreate = () => {
     purchaseQuantity: 0,
     remainingQuantity: 0,
     shippingCost: 0,
-    returnCost: 0
+    returnCost: 0,
+    pageId: null
   }
   uploadedImages.value = []
   imageFileList.value = []
@@ -684,7 +831,8 @@ const handleEdit = row => {
     purchaseQuantity: row.purchaseQuantity,
     remainingQuantity: row.remainingQuantity,
     shippingCost: row.shippingCost || 0,
-    returnCost: row.returnCost || 0
+    returnCost: row.returnCost || 0,
+    pageId: row.pageId ? (typeof row.pageId === 'object' ? row.pageId._id : row.pageId) : null
   }
   // 初始化已上传的图片列表（支持逗号分隔的多个路径）
   uploadedImages.value = row.imageUrl
@@ -880,6 +1028,99 @@ const handleSizeChange = val => {
 const handleCurrentChange = val => {
   currentPage.value = val
   loadClothingList()
+}
+
+// 加载页面列表（用于选择器）
+const loadPageListForSelect = async () => {
+  if (availablePages.value.length > 0) {
+    return // 已经加载过，不需要重复加载
+  }
+  pageListLoading.value = true
+  try {
+    const response = await getPageList({
+      page: 1,
+      limit: 1000 // 加载所有页面
+    })
+    if (response.code === 200 && response.data) {
+      availablePages.value = response.data.list || []
+    }
+  } catch (error) {
+    console.error('加载页面列表失败:', error)
+  } finally {
+    pageListLoading.value = false
+  }
+}
+
+// 过滤可用页面（用于绑定对话框）
+const filteredAvailablePages = computed(() => {
+  let filtered = availablePages.value
+  if (pageSearchKeyword.value) {
+    const keyword = pageSearchKeyword.value.toLowerCase()
+    filtered = filtered.filter(page => page.name?.toLowerCase().includes(keyword))
+  }
+  return filtered
+})
+
+// 页面搜索处理
+const handlePageSearch = () => {
+  // 搜索逻辑已在 computed 中处理
+}
+
+// 打开绑定页面对话框
+const handleBindPages = async row => {
+  currentBindClothingId.value = row._id
+  selectedPageId.value = null
+  pageSearchKeyword.value = ''
+  bindPageDialogVisible.value = true
+
+  // 加载已绑定的页面
+  loadingBoundPage.value = true
+  try {
+    const response = await getBoundPage(row._id)
+    if (response.code === 200 && response.data) {
+      currentBoundPage.value = response.data
+      selectedPageId.value = response.data ? response.data._id || response.data : null
+    }
+  } catch (error) {
+    console.error('加载已绑定页面失败:', error)
+    ElMessage.error('加载已绑定页面失败')
+  } finally {
+    loadingBoundPage.value = false
+  }
+
+  // 加载可用页面列表
+  await loadPageListForSelect()
+}
+
+// 移除已绑定的页面
+const removeBoundPage = () => {
+  selectedPageId.value = null
+  currentBoundPage.value = null
+}
+
+// 提交绑定页面
+const handleBindPageSubmit = async () => {
+  if (!currentBindClothingId.value) {
+    ElMessage.error('未找到服装ID')
+    return
+  }
+
+  bindingPage.value = true
+  try {
+    const response = await bindPage(currentBindClothingId.value, selectedPageId.value)
+    if (response.code === 200) {
+      ElMessage.success(selectedPageId.value ? '页面绑定成功' : '页面解绑成功')
+      bindPageDialogVisible.value = false
+      await loadClothingList()
+    } else {
+      ElMessage.error(response.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('绑定页面失败:', error)
+    ElMessage.error(error.message || '绑定页面失败')
+  } finally {
+    bindingPage.value = false
+  }
 }
 
 // 组件挂载时加载数据

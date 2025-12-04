@@ -67,3 +67,31 @@ export function restockClothing(id, quantity) {
 export function getClothingStats() {
   return post('/clothing/stats', {})
 }
+
+/**
+ * 绑定页面到服装（只能绑定一个）
+ * @param {string} id - 服装ID
+ * @param {string} pageId - 页面ID
+ * @returns {Promise}
+ */
+export function bindPage(id, pageId) {
+  return post('/clothing/bindPage', { id, pageId })
+}
+
+/**
+ * 解绑页面
+ * @param {string} id - 服装ID
+ * @returns {Promise}
+ */
+export function unbindPage(id) {
+  return post('/clothing/unbindPage', { id })
+}
+
+/**
+ * 获取服装绑定的页面（查询接口）
+ * @param {string} id - 服装ID
+ * @returns {Promise}
+ */
+export function getBoundPage(id) {
+  return post('/clothing/getBoundPage', { id })
+}

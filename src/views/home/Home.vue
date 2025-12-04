@@ -192,7 +192,7 @@ const getVideoSrc = component => {
 const getVideoHeight = component => {
   // 可以从 descriptions 或 component 的其他配置中读取
   // 暂时使用默认值
-  return '100vh'
+  return '100%'
 }
 
 // 获取视频文字（从 descriptions 中获取）

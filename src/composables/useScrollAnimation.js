@@ -6,6 +6,20 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
 
 /**
+ * 防抖函数
+ * @param {Function} func - 要防抖的函数
+ * @param {Number} wait - 等待时间（毫秒）
+ * @returns {Function} 防抖后的函数
+ */
+function debounce(func, wait = 150) {
+  let timeout = null
+  return function (...args) {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func.apply(this, args), wait)
+  }
+}
+
+/**
  * 滚动动画 Hook
  * @param {Object} container - 容器元素（触发 ScrollTrigger 的元素）- 传入 ref 对象
  * @param {Object} target - 要动画化的目标元素 - 传入 ref 对象
@@ -31,12 +45,16 @@ export function useScrollAnimation(container, target, options = {}) {
   const maxScale = computed(() => unref(options.maxScale) ?? 20)
   const enabled = computed(() => unref(options.enabled) ?? true)
 
-  // ScrollTrigger 实例
+  // ScrollTrigger 实例和动画实例
   let scrollTriggerInstance = null
+  let animationInstance = null
 
   // 初始化滚动动画
   const initScrollAnimation = () => {
-    if (!enabled.value) return
+    if (!enabled.value) {
+      cleanup()
+      return
+    }
 
     // 获取容器和目标元素的 DOM 节点
     const containerElement = container?.value || container
@@ -44,11 +62,10 @@ export function useScrollAnimation(container, target, options = {}) {
 
     if (!containerElement || !targetElement) return
 
-    // 清理之前的 ScrollTrigger
-    if (scrollTriggerInstance) {
-      scrollTriggerInstance.kill()
-      scrollTriggerInstance = null
-    }
+    // 清理之前的 ScrollTrigger 和动画
+    cleanup()
+
+    // 设置 z-index
     gsap.set(containerElement, { zIndex: 20 })
     gsap.set(targetElement, { zIndex: 21 })
 
@@ -58,38 +75,20 @@ export function useScrollAnimation(container, target, options = {}) {
     const startScale = minScale.value
     const endScale = maxScale.value
 
-    // 立即设置初始状态为动画起始帧，确保页面加载时显示正确
-    gsap.set(targetElement, { scale: startScale, transformOrigin: 'center center' })
-
-    // 创建一个虚拟对象来存储缩放值，用于 Timeline 动画
-    const scaleObj = { scale: startScale, transformOrigin: 'center center' }
-
-    // 创建 GSAP Timeline
-    const tl = gsap.timeline({
-      paused: true, // 暂停时间线，由 ScrollTrigger 控制
-      defaults: {
-        ease: 'none' // 默认无缓动，跟随滚动
-      }
+    // 设置初始状态
+    gsap.set(targetElement, {
+      scale: startScale,
+      transformOrigin: 'center center'
     })
 
-    // 在时间线中添加缩放动画
-    tl.to(scaleObj, {
+    // 直接使用 gsap.to 创建动画，让 ScrollTrigger 控制
+    animationInstance = gsap.to(targetElement, {
       scale: endScale,
-      onUpdate: function () {
-        // 根据时间线进度更新元素 transform
-        const scale = scaleObj.scale
-        // 统一使用中心点缩放
-        gsap.set(targetElement, {
-          scale: scale,
-          transformOrigin: 'center center'
-        })
-      }
+      ease: 'none', // 无缓动，跟随滚动
+      paused: true // 暂停动画，由 ScrollTrigger 控制
     })
 
-    // 立即应用初始状态，确保 timeline 的初始值被正确应用
-    tl.progress(0)
-
-    // 创建 ScrollTrigger，控制时间线
+    // 创建 ScrollTrigger，控制动画
     scrollTriggerInstance = ScrollTrigger.create({
       trigger: containerElement,
       start: start.value,
@@ -97,23 +96,7 @@ export function useScrollAnimation(container, target, options = {}) {
       pin: pin.value,
       pinSpacing: pinSpacing.value,
       scrub: scrub.value,
-      animation: tl, // 将时间线绑定到 ScrollTrigger
-      onEnter: () => {
-        // 进入时设置初始状态（动画起始值）
-        if (targetElement) {
-          gsap.set(targetElement, { scale: startScale, transformOrigin: 'center center' })
-        }
-      },
-      onLeave: () => {
-        // 离开时时间线会自动处理
-      },
-      onEnterBack: () => {
-        // 反向进入时时间线会自动处理
-      },
-      onLeaveBack: () => {
-        // 反向离开时时间线会自动处理
-      },
-      onRefresh: () => {}
+      animation: animationInstance // 将动画绑定到 ScrollTrigger
     })
   }
 
@@ -123,13 +106,27 @@ export function useScrollAnimation(container, target, options = {}) {
       scrollTriggerInstance.kill()
       scrollTriggerInstance = null
     }
+    if (animationInstance) {
+      animationInstance.kill()
+      animationInstance = null
+    }
   }
 
   // 刷新动画
   const refresh = () => {
     cleanup()
-    initScrollAnimation()
+    // 延迟一下确保 DOM 已更新
+    setTimeout(() => {
+      initScrollAnimation()
+    }, 50)
   }
+
+  // 创建防抖的 resize 处理函数
+  const debouncedResize = debounce(() => {
+    if (enabled.value) {
+      refresh()
+    }
+  }, 150)
 
   // 监听 container、target 和 enabled 变化，重新初始化
   watch(
@@ -141,8 +138,25 @@ export function useScrollAnimation(container, target, options = {}) {
           initScrollAnimation()
         }, 100)
       }
-    },
-    { deep: true }
+    }
+  )
+
+  // 监听 options 的所有属性变化
+  watch(
+    () => [
+      start.value,
+      end.value,
+      pin.value,
+      pinSpacing.value,
+      scrub.value,
+      minScale.value,
+      maxScale.value
+    ],
+    () => {
+      if (enabled.value && scrollTriggerInstance) {
+        refresh()
+      }
+    }
   )
 
   // 组件挂载后初始化动画
@@ -151,19 +165,16 @@ export function useScrollAnimation(container, target, options = {}) {
       // 延迟一下确保 DOM 已渲染完成
       setTimeout(() => {
         initScrollAnimation()
-        const targetElement = target?.value || target
-        if (targetElement)
-          gsap.set(targetElement, { scale: minScale.value, transformOrigin: 'center center' })
-        // 窗口大小改变时重新计算
-        window.addEventListener('resize', initScrollAnimation)
-      })
+        // 窗口大小改变时重新计算（使用防抖）
+        window.addEventListener('resize', debouncedResize)
+      }, 100)
     }
   })
 
   // 组件卸载时清理动画
   onUnmounted(() => {
     cleanup()
-    window.removeEventListener('resize', initScrollAnimation)
+    window.removeEventListener('resize', debouncedResize)
   })
 
   // 返回控制方法
