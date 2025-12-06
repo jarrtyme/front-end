@@ -4,6 +4,8 @@
       v-for="(item, index) in items"
       :key="item.id || item.media?.url || item.url || index"
       class="detail-card"
+      :class="{ clickable: isClickable(item) }"
+      @click="handleItemClick(item)"
     >
       <div v-if="hasMedia(item)" class="media-wrapper">
         <MediaItem
@@ -36,7 +38,9 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import MediaItem from '@/components/MediaItem.vue'
+import { handleItemClick as handleItemClickUtil } from '@/utils/linkHandler'
 
 const props = defineProps({
   items: {
@@ -52,6 +56,18 @@ const props = defineProps({
     default: ''
   }
 })
+
+const router = useRouter()
+
+// 判断是否可点击
+const isClickable = item => {
+  return !!(item?.clothingId || item?.link || props.link)
+}
+
+// 处理点击事件
+const handleItemClick = item => {
+  handleItemClickUtil(item, props.link, router)
+}
 
 const hasMedia = item => {
   return Boolean(item?.media?.url || item?.url)
@@ -113,6 +129,16 @@ const linkText = computed(() => props.linkText || '')
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(4px);
   flex-wrap: wrap;
+
+  &.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
+    }
+  }
 }
 
 .media-wrapper {

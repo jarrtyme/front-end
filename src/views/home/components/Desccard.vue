@@ -1,6 +1,12 @@
 <template>
   <div class="desc-card">
-    <div v-for="(item, index) in items" :key="item.id || item.url || index" class="default-item">
+    <div
+      v-for="(item, index) in items"
+      :key="item.id || item.url || index"
+      class="default-item"
+      :class="{ clickable: isClickable(item) }"
+      @click="handleItemClick(item)"
+    >
       <MediaItem
         :item="item"
         :alt-text="`Image ${index + 1}`"
@@ -15,14 +21,33 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import MediaItem from '@/components/MediaItem.vue'
+import { handleItemClick as handleItemClickUtil } from '@/utils/linkHandler'
 
 const props = defineProps({
   items: {
     type: Array,
     default: () => []
+  },
+  // 组件级别的链接
+  link: {
+    type: String,
+    default: ''
   }
 })
+
+const router = useRouter()
+
+// 判断是否可点击
+const isClickable = item => {
+  return !!(item?.clothingId || item?.link || props.link)
+}
+
+// 处理点击事件
+const handleItemClick = item => {
+  handleItemClickUtil(item, props.link, router)
+}
 </script>
 
 <style lang="scss" scoped>
@@ -42,5 +67,14 @@ const props = defineProps({
   width: 100%;
   overflow: hidden;
   position: relative;
+
+  &.clickable {
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
 }
 </style>

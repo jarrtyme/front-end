@@ -22,7 +22,12 @@
     >
       <el-carousel-item v-for="item in items" :key="item.id || item">
         <h3 v-if="typeof item === 'number'" text="2xl" justify="center">{{ item }}</h3>
-        <div v-else-if="item.url || typeof item === 'string'" class="carousel-item-content">
+        <div
+          v-else-if="item.url || typeof item === 'string'"
+          class="carousel-item-content"
+          :class="{ clickable: isClickable(item) }"
+          @click="handleItemClick(item)"
+        >
           <img v-if="isImage(item)" :src="item.url || item" class="carousel-image" />
           <VideoPlayer
             v-else-if="isVideo(item)"
@@ -34,7 +39,12 @@
             :showControls="false"
           />
         </div>
-        <div v-else class="carousel-item-inner">
+        <div
+          v-else
+          class="carousel-item-inner"
+          :class="{ clickable: isClickable(item) }"
+          @click="handleItemClick(item)"
+        >
           <slot name="item" :item="item" />
         </div>
       </el-carousel-item>
@@ -62,17 +72,36 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/VideoPlayer.vue'
 import { isImage, isVideo } from '@/composables/useMediaType'
+import { handleItemClick as handleItemClickUtil } from '@/utils/linkHandler'
 
 const props = defineProps({
   // 轮播图数据，可以是数字数组、图片URL数组或对象数组
   items: {
     type: Array,
     default: () => [1, 2, 3, 4, 5, 6]
+  },
+  // 组件级别的链接
+  link: {
+    type: String,
+    default: ''
   }
 })
+
+const router = useRouter()
+
+// 判断是否可点击
+const isClickable = item => {
+  return !!(item?.clothingId || item?.link || props.link)
+}
+
+// 处理点击事件
+const handleItemClick = item => {
+  handleItemClickUtil(item, props.link, router)
+}
 
 const carouselRef = ref(null)
 const currentIndex = ref(0)
@@ -256,10 +285,30 @@ const handleMouseUp = e => {
   align-items: center;
   justify-content: center;
 
+  &.clickable {
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+
   :deep(.video-player-container) {
     width: 100%;
     height: 100%;
     margin-bottom: 0;
+  }
+}
+
+.carousel-item-inner {
+  &.clickable {
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 0.9;
+    }
   }
 }
 

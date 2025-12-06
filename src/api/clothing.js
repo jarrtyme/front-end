@@ -95,3 +95,12 @@ export function unbindPage(id) {
 export function getBoundPage(id) {
   return post('/clothing/getBoundPage', { id })
 }
+
+/**
+ * 获取公开的服装详情（不需要登录）
+ * @param {string} id - 服装ID
+ * @returns {Promise}
+ */
+export function getClothingPublicDetail(id) {
+  return post('/clothing/getPublicDetail', { id })
+}

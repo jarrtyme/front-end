@@ -22,6 +22,16 @@ const homeRoutes = [
       title: '关于我们',
       requiresAuth: false
     }
+  },
+  {
+    path: '/clothing/:id',
+    name: 'ClothingDetail',
+    component: () => import('@/views/Home/Home.vue'),
+    meta: {
+      keepAlive: false,
+      title: '服装详情',
+      requiresAuth: false // 公开页面，不需要登录
+    }
   }
 ]
 

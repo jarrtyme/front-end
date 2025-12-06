@@ -22,7 +22,13 @@
         :style="copyIndex > 0 ? cloneStyle : {}"
       >
         <slot>
-          <div v-for="(item, index) in items" :key="`${copyIndex}-${index}`" class="carousel-item">
+          <div
+            v-for="(item, index) in items"
+            :key="`${copyIndex}-${index}`"
+            class="carousel-item"
+            :class="{ clickable: isClickable(item) }"
+            @click="handleItemClick(item)"
+          >
             <slot name="item" :item="item" :index="index">
               <div v-if="item.url" class="default-item">
                 <img
@@ -51,9 +57,13 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { gsap } from 'gsap'
 import VideoPlayer from '@/components/VideoPlayer.vue'
 import { isImage, isVideo } from '@/composables/useMediaType'
+import { handleItemClick as handleItemClickUtil } from '@/utils/linkHandler'
+
+const router = useRouter()
 
 const props = defineProps({
   // 数据列表
@@ -87,8 +97,23 @@ const props = defineProps({
   itemSize: {
     type: [Number, String],
     default: null
+  },
+  // 组件级别的链接
+  link: {
+    type: String,
+    default: ''
   }
 })
+
+// 判断是否可点击
+const isClickable = item => {
+  return !!(item?.clothingId || item?.link || props.link)
+}
+
+// 处理点击事件
+const handleItemClick = item => {
+  handleItemClickUtil(item, props.link, router)
+}
 
 const containerRef = ref(null)
 const wrapperRef = ref(null)
@@ -389,6 +414,15 @@ defineExpose({
 
 .carousel-item {
   flex-shrink: 0;
+
+  &.clickable {
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
 }
 
 .default-item {

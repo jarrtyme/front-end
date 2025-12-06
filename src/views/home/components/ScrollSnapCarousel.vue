@@ -8,6 +8,8 @@
           :key="index"
           :ref="el => setItemRef(el, index)"
           class="scroll-snap-item"
+          :class="{ clickable: isClickable(item) }"
+          @click="handleItemClick(item)"
         >
           <slot name="item" :item="item" :index="index">
             <div class="default-item-content">
@@ -64,9 +66,13 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/VideoPlayer.vue'
 import { isImage, isVideo } from '@/composables/useMediaType'
+import { handleItemClick as handleItemClickUtil } from '@/utils/linkHandler'
+
+const router = useRouter()
 
 const props = defineProps({
   // 轮播数据
@@ -111,8 +117,23 @@ const props = defineProps({
     type: String,
     default: 'start',
     validator: value => ['start', 'center', 'end'].includes(value)
+  },
+  // 组件级别的链接
+  link: {
+    type: String,
+    default: ''
   }
 })
+
+// 判断是否可点击
+const isClickable = item => {
+  return !!(item?.clothingId || item?.link || props.link)
+}
+
+// 处理点击事件
+const handleItemClick = item => {
+  handleItemClickUtil(item, props.link, router)
+}
 
 const scrollContainer = ref(null)
 const currentIndex = ref(0)
@@ -329,6 +350,15 @@ const scrollToNext = () => {
 
   &:last-child {
     padding-right: calc(var(--double-edge-border-width) + var(--gutter-width));
+  }
+
+  &.clickable {
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 0.95;
+    }
   }
 }
 

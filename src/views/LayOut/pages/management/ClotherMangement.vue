@@ -127,8 +127,11 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="320" align="center" fixed="right">
+        <el-table-column label="操作" width="380" align="center" fixed="right">
           <template #default="{ row }">
+            <el-button type="info" size="small" @click="handleViewDetail(row)">
+              查看详情
+            </el-button>
             <el-button type="primary" size="small" :icon="Edit" @click="handleEdit(row)">
               编辑
             </el-button>
@@ -460,7 +463,6 @@
             placeholder="搜索页面名称"
             clearable
             style="width: 100%"
-            @input="handlePageSearch"
           >
             <template #prefix>
               <el-icon><Search /></el-icon>
@@ -508,6 +510,7 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   createClothing,
   findClothing,
@@ -518,6 +521,8 @@ import {
   bindPage,
   getBoundPage
 } from '@/api/clothing'
+
+const router = useRouter()
 import { getPageList } from '@/api/page'
 import FileUpload from '@/components/FileUpload.vue'
 import {
@@ -538,7 +543,6 @@ import {
   isValidUploadResponse
 } from '@/utils/uploadHelper'
 import { getPageSizeOptions } from '@/config/pagination'
-import { getDisplayTypeLabel, getDisplayTypeTagType } from '@/config/displayType'
 
 // 响应式数据
 const clothingList = ref([])
@@ -576,11 +580,9 @@ const formData = ref({
 // 图片上传相关
 const imageFileList = ref([])
 const uploadedImages = ref([]) // 已上传的图片路径数组
-const uploading = ref(false)
 
 // 图片上传成功
 const handleImageUploadSuccess = async (response, file) => {
-  uploading.value = true
   try {
     if (!isValidUploadResponse(response)) {
       return
@@ -624,14 +626,12 @@ const handleImageUploadSuccess = async (response, file) => {
   } catch (error) {
     console.error('处理上传结果失败:', error)
     ElMessage.error('处理上传结果失败: ' + (error.message || '未知错误'))
-  } finally {
-    uploading.value = false
   }
 }
 
 // 图片上传失败
-const handleImageUploadError = (error, file) => {
-  uploading.value = false
+const handleImageUploadError = () => {
+  ElMessage.error('图片上传失败')
 }
 
 // 补货对话框
@@ -709,18 +709,14 @@ const getImageListFromRow = row => {
 }
 
 // 获取图片完整 URL
-// 后端已经返回完整的 URL，直接使用即可
 const getImageUrl = url => {
   if (!url) return ''
-  // 如果已经是完整 URL，直接返回
   if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
     return url
   }
-  // 如果是对象（兼容旧代码），尝试获取 url 或 path
   if (typeof url === 'object') {
     return url.url || url.path || ''
   }
-  // 直接返回（后端已返回完整URL）
   return url
 }
 
@@ -762,10 +758,8 @@ const loadClothingList = async () => {
       limit: pageSize.value
     })
     if (response.code === 200 && response.data) {
-      // 适配新的响应格式：{ list: [...], pagination: {...} }
       clothingList.value = response.data.list || response.data || []
       total.value = response.data.pagination?.total || response.data.length || 0
-      ElMessage.success('服装列表加载成功')
     } else {
       ElMessage.error(response.message || '获取服装列表失败')
       clothingList.value = []
@@ -807,13 +801,18 @@ const handleCreate = () => {
   uploadedImages.value = []
   imageFileList.value = []
   dialogVisible.value = true
+  resetUploadComponent()
+}
 
-  // 清理上传组件状态
-  nextTick(() => {
-    if (uploadRef.value && uploadRef.value.clearFiles) {
-      uploadRef.value.clearFiles()
-    }
-  })
+// 查看详情（跳转到详情页）
+const handleViewDetail = row => {
+  if (!row._id) {
+    ElMessage.error('服装ID不存在')
+    return
+  }
+  // 在新标签页打开详情页
+  const detailUrl = router.resolve({ name: 'ClothingDetail', params: { id: row._id } }).href
+  window.open(detailUrl, '_blank')
 }
 
 // 编辑服装
@@ -843,10 +842,13 @@ const handleEdit = row => {
     : []
   imageFileList.value = []
   dialogVisible.value = true
+  resetUploadComponent()
+}
 
-  // 清理上传组件状态（编辑时保留已有图片，但清理上传队列）
+// 重置上传组件状态
+const resetUploadComponent = () => {
   nextTick(() => {
-    if (uploadRef.value && uploadRef.value.clearFiles) {
+    if (uploadRef.value?.clearFiles) {
       uploadRef.value.clearFiles()
     }
   })
@@ -896,29 +898,18 @@ const handleSubmit = async () => {
 
 // 移除上传组件中的图片
 const handleRemoveImage = (file, fileList) => {
-  // 从已上传列表中移除
-  if (file && file.response) {
-    // 尝试找到文件在列表中的索引（用于多文件上传）
+  if (file?.response) {
     const fileIndex = file.uid ? fileList.findIndex(f => f.uid === file.uid) : null
-
-    // 使用工具函数提取图片URL
     const imageUrl = extractImageUrlFromFile(file, fileIndex)
 
-    // 如果找到了图片URL，从已上传列表中移除
     if (imageUrl) {
       const index = uploadedImages.value.indexOf(imageUrl)
       if (index > -1) {
         uploadedImages.value.splice(index, 1)
         ElMessage.success('图片已移除')
       }
-    } else {
-      // 如果无法从响应中提取URL，尝试从文件的name或其他属性匹配
-      // 这种情况比较少见，但为了健壮性还是处理一下
-      console.warn('无法从文件响应中提取图片URL，文件:', file)
     }
   }
-
-  // 更新 file-list
   imageFileList.value = fileList || []
 }
 
@@ -1060,11 +1051,6 @@ const filteredAvailablePages = computed(() => {
   }
   return filtered
 })
-
-// 页面搜索处理
-const handlePageSearch = () => {
-  // 搜索逻辑已在 computed 中处理
-}
 
 // 打开绑定页面对话框
 const handleBindPages = async row => {

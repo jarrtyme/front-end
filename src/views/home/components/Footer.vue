@@ -75,7 +75,10 @@ const footerLines = computed(() => {
 })
 
 const footerSignature = computed(() => props.items?.[0]?.media?.filename || DEFAULT_SIGNATURE)
-const displayLink = computed(() => props.link || props.items?.[0]?.media?.url || '')
+// 统一使用 link 字段
+const displayLink = computed(() => {
+  return props.link && typeof props.link === 'string' && props.link.trim() ? props.link.trim() : ''
+})
 const displayLinkText = computed(() => props.items?.[0]?.media?.filename || '了解更多')
 </script>
 
