@@ -80,8 +80,8 @@ export function getPublicPageList(params = {}) {
 }
 
 /**
- * 根据ID查询单个已发布的页面（公开访问，无需鉴权）
- * @param {string} id - 页面ID
+ * 根据ID或名称查询单个已发布的页面（公开访问，无需鉴权）
+ * @param {string} id - 页面ID（MongoDB ObjectId）或页面名称
  * @returns {Promise}
  */
 export function getPublicPageById(id) {

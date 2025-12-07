@@ -87,6 +87,18 @@
 
 <script setup>
 import { User, Setting, SwitchButton } from '@element-plus/icons-vue'
+import { useSrcean } from '@/hooks/useSrcean'
+const { scale } = useSrcean()
+
+watch(
+  scale,
+  value => {
+    if (document?.body) {
+      document.body.style.zoom = value
+    }
+  },
+  { immediate: true }
+)
 
 defineOptions({
   name: 'AdminLayout'

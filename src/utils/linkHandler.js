@@ -26,7 +26,8 @@ export function handleLinkClick(link, router) {
 
   if (isExternalLink(trimmedLink)) {
     // 外部链接，新窗口打开
-    window.open(trimmedLink, '_blank', 'noopener,noreferrer')
+    window.location.href = trimmedLink
+    // window.open(trimmedLink, '_blank', 'noopener,noreferrer')
   } else {
     // 内部路由
     try {
@@ -46,7 +47,7 @@ export function handleLinkClick(link, router) {
  */
 export function handleItemClick(item, link, router) {
   if (!item) return
-console.log(item, link);
+  console.log(item, link)
 
   // 优先使用 clothingId
   if (item.clothingId) {

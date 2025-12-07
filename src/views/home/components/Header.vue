@@ -27,7 +27,8 @@ const router = useRouter()
 const route = useRoute()
 
 const isHomePage = computed(() => {
-  return route.path === '/' || route.name === 'Home'
+  console.log(route.name);
+  return route.name === 'Home'
 })
 
 const goBack = () => {
@@ -82,6 +83,7 @@ const displayLinkText = computed(() => props.items?.[0]?.media?.filename || '了
 
 .back-button {
   position: absolute;
+  z-index: 23;
   left: 20px;
   background-color: rgba(255, 255, 255, 0.9);
   backdrop-filter: saturate(180%) blur(20px);

@@ -7,19 +7,6 @@
 </template>
 
 <script setup>
-import { useSrcean } from '@/hooks/useSrcean'
-const { scale } = useSrcean()
-
-watch(
-  scale,
-  value => {
-    if (document?.body) {
-      document.body.style.zoom = value
-    }
-  },
-  { immediate: true }
-)
-
 // 自动导入：computed, useRoute, useRouter 等 API 已自动导入，无需手动 import
 
 const route = useRoute()

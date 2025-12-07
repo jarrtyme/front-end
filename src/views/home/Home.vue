@@ -50,7 +50,7 @@ import { getClothingPublicDetail } from '@/api/clothing'
 import { DEFAULT_DISPLAY_TYPE } from '@/config/displayType'
 import { usePageComponents, getComponentItemsData } from '@/composables/usePageComponents'
 
-const DEFAULT_PAGE_ID = '69184f3ac478e22e4de2698d'
+const DEFAULT_PAGE_ID = 'home'
 
 // 路由实例
 const route = useRoute()
@@ -176,15 +176,12 @@ watch(
   }
 )
 
-watch(
-  currentPageId,
-  newId => {
-    if (!isClothingDetailMode.value) {
-      loadPageComponents(newId)
-    }
-  },
-  { immediate: true }
-)
+// 监听 currentPageId 变化（排除初始化时的调用，避免重复）
+watch(currentPageId, newId => {
+  if (!isClothingDetailMode.value) {
+    loadPageComponents(newId)
+  }
+})
 
 // 初始化
 onMounted(() => {
@@ -194,8 +191,12 @@ onMounted(() => {
     // 如果访问时没有 id 且存在默认值，保持 URL 一致
     if (!route.query.id && DEFAULT_PAGE_ID) {
       router.replace({ query: { ...route.query, id: DEFAULT_PAGE_ID } })
+      // router.replace 会触发 currentPageId 变化，watch 会自动调用 loadPageComponents
+      // 所以这里不需要手动调用
+    } else {
+      // 如果已经有 id，直接加载
+      loadPageComponents(currentPageId.value)
     }
-    loadPageComponents(currentPageId.value)
   }
 })
 </script>
