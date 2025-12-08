@@ -129,19 +129,20 @@
 
         <el-table-column label="操作" width="380" align="center" fixed="right">
           <template #default="{ row }">
-            <el-button type="info" size="small" @click="handleViewDetail(row)">
+            <el-button type="info" link size="small" @click="handleViewDetail(row)">
               查看详情
             </el-button>
-            <el-button type="primary" size="small" :icon="Edit" @click="handleEdit(row)">
+            <el-button type="primary" link size="small" :icon="Edit" @click="handleEdit(row)">
               编辑
             </el-button>
-            <el-button type="success" size="small" :icon="Plus" @click="handleRestock(row)">
+            <el-button type="success" size="small" link @click="handleRestock(row)">
               补货
             </el-button>
-            <el-button type="warning" size="small" :icon="Link" @click="handleBindPages(row)">
+            <el-button type="warning" size="small" link @click="handleBindPages(row)">
               绑定页面
             </el-button>
             <el-button
+              link
               type="danger"
               size="small"
               :icon="Delete"
