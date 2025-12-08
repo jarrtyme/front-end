@@ -395,6 +395,7 @@ import {
 } from '@/config/displayType'
 import { DEFAULT_PAGE, getDefaultPageSize, getPageSizeOptions } from '@/config/pagination'
 import { FILE_TYPES } from '@/config/fileType'
+import { debounce } from 'lodash-es'
 
 defineOptions({
   name: 'PageComponentManagement'
@@ -487,16 +488,10 @@ onMounted(() => {
 })
 
 // 搜索处理（防抖）
-let searchTimer = null
-const handleSearch = () => {
-  if (searchTimer) {
-    clearTimeout(searchTimer)
-  }
-  searchTimer = setTimeout(() => {
-    currentPage.value = DEFAULT_PAGE
-    loadComponentList()
-  }, 500)
-}
+const handleSearch = debounce(() => {
+  currentPage.value = DEFAULT_PAGE
+  loadComponentList()
+}, 500)
 
 // 筛选处理
 const handleFilterChange = () => {

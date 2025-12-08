@@ -258,6 +258,7 @@ import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, ArrowDown } from '@element-plus/icons-vue'
+import { isEqual } from 'lodash-es'
 import { getUserList } from '@/api/user'
 import { getRoleTagType, getRoleLabel, isSuperAdmin, ROLES } from '@/config/role'
 import {
@@ -338,11 +339,12 @@ const currentModeTagType = computed(() => {
   return 'success'
 })
 
+// 使用 lodash 的 isEqual 进行深度比较
 const arraysEqual = (a = [], b = []) => {
   if (a.length !== b.length) return false
   const sortedA = [...a].sort()
   const sortedB = [...b].sort()
-  return sortedA.every((val, idx) => val === sortedB[idx])
+  return isEqual(sortedA, sortedB)
 }
 
 const isDirty = computed(() => {

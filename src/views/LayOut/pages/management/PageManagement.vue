@@ -81,8 +81,14 @@
             {{ row.createdAt ? new Date(row.createdAt).toLocaleString('zh-CN') : '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column label="操作" width="350" fixed="right">
           <template #default="{ row }">
+            <el-button type="success" link size="small" @click="handleViewPage(row)">
+              查看
+            </el-button>
+            <el-button type="info" link size="small" @click="handleCopyLink(row)">
+              复制链接
+            </el-button>
             <el-button type="primary" link size="small" @click="handleEdit(row)"> 编辑 </el-button>
             <el-button
               :type="row.isPublished ? 'warning' : 'success'"
@@ -316,11 +322,15 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useClipboard } from '@vueuse/core'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete, Search, Refresh, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
 import { getPageList, createPage, updatePage, deletePage, getPageById } from '@/api/page'
 import { getPageComponentList } from '@/api/pageComponent'
 import ModernDialog from '@/components/ModernDialog.vue'
+import { getFullPageUrl, isPageAccessible } from '@/utils/pageUtils'
+import { debounce } from 'lodash-es'
 import {
   getDisplayTypeLabel,
   getDisplayTypeTagType,
@@ -331,6 +341,9 @@ import { DEFAULT_PAGE, getDefaultPageSize, getPageSizeOptions } from '@/config/p
 defineOptions({
   name: 'PageManagement'
 })
+
+const router = useRouter()
+const { copy } = useClipboard()
 
 const searchKeyword = ref('')
 const filterIsPublished = ref(null)
@@ -420,16 +433,10 @@ onMounted(() => {
 })
 
 // 搜索处理（防抖）
-let searchTimer = null
-const handleSearch = () => {
-  if (searchTimer) {
-    clearTimeout(searchTimer)
-  }
-  searchTimer = setTimeout(() => {
-    currentPage.value = DEFAULT_PAGE
-    loadPageList()
-  }, 500)
-}
+const handleSearch = debounce(() => {
+  currentPage.value = DEFAULT_PAGE
+  loadPageList()
+}, 500)
 
 // 筛选处理
 const handleFilterChange = () => {
@@ -508,6 +515,45 @@ const handleDelete = async row => {
     }
   } finally {
     loading.value = false
+  }
+}
+
+// 查看页面
+const handleViewPage = row => {
+  if (!isPageAccessible(row)) {
+    ElMessage.warning('该页面未发布或已禁用，无法查看')
+    return
+  }
+
+  const fullUrl = getFullPageUrl(row)
+  if (!fullUrl) {
+    ElMessage.error('无法生成页面链接')
+    return
+  }
+
+  // 在新标签页打开
+  window.open(fullUrl, '_blank')
+}
+
+// 复制页面链接
+const handleCopyLink = async row => {
+  if (!isPageAccessible(row)) {
+    ElMessage.warning('该页面未发布或已禁用，无法复制链接')
+    return
+  }
+
+  const fullUrl = getFullPageUrl(row)
+  if (!fullUrl) {
+    ElMessage.error('无法生成页面链接')
+    return
+  }
+
+  try {
+    await copy(fullUrl)
+    ElMessage.success('链接已复制到剪贴板')
+  } catch (error) {
+    console.error('复制失败:', error)
+    ElMessage.error('复制失败，请手动复制')
   }
 }
 
@@ -660,17 +706,11 @@ const loadComponentList = async () => {
   }
 }
 
-// 组件搜索处理
-let componentSearchTimer = null
-const handleComponentSearch = () => {
-  if (componentSearchTimer) {
-    clearTimeout(componentSearchTimer)
-  }
-  componentSearchTimer = setTimeout(() => {
-    componentCurrentPage.value = 1
-    loadComponentList()
-  }, 500)
-}
+// 组件搜索处理（防抖）
+const handleComponentSearch = debounce(() => {
+  componentCurrentPage.value = 1
+  loadComponentList()
+}, 500)
 
 // 组件选择变化
 const handleComponentSelectionChange = selection => {

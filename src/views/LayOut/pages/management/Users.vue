@@ -139,6 +139,7 @@ import { getUserList, deleteUser, updateUser } from '@/api/user'
 import ModernDialog from '@/components/ModernDialog.vue'
 import { getRoleTagType, getRoleLabel, isSuperAdmin, ROLES, DEFAULT_ROLE } from '@/config/role'
 import { DEFAULT_PAGE, getDefaultPageSize, getPageSizeOptions } from '@/config/pagination'
+import { debounce } from 'lodash-es'
 
 defineOptions({
   name: 'Users'
@@ -221,16 +222,10 @@ onMounted(() => {
 })
 
 // 搜索处理（防抖）
-let searchTimer = null
-const handleSearch = () => {
-  if (searchTimer) {
-    clearTimeout(searchTimer)
-  }
-  searchTimer = setTimeout(() => {
-    currentPage.value = DEFAULT_PAGE
-    loadUserList()
-  }, 500)
-}
+const handleSearch = debounce(() => {
+  currentPage.value = DEFAULT_PAGE
+  loadUserList()
+}, 500)
 
 const handleAdd = () => {
   ElMessage.info('添加用户功能开发中...')

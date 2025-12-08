@@ -138,7 +138,6 @@ const animationOptions = {
   pinSpacing: true,
   scrub: 1
 }
-console.log('VideoPlayer 中的 animationOptions:', animationOptions)
 useScrollAnimation(containerRef, maskTextRef, animationOptions)
 
 // 播放

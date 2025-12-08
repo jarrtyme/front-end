@@ -521,10 +521,11 @@ import {
   bindPage,
   getBoundPage
 } from '@/api/clothing'
-
-const router = useRouter()
 import { getPageList } from '@/api/page'
 import FileUpload from '@/components/FileUpload.vue'
+import { getFullPageUrl } from '@/utils/pageUtils'
+
+const router = useRouter()
 import {
   Search,
   Refresh,
@@ -835,8 +836,15 @@ const handleViewDetail = async row => {
   }
 
   // 在新标签页打开页面详情
-  const detailUrl = router.resolve({ name: 'PageDetail', params: { id: pageId } }).href
-  window.open(detailUrl, '_blank')
+  // 使用页面工具函数生成URL
+  const fullUrl = getFullPageUrl({ _id: pageId })
+  if (fullUrl) {
+    window.open(fullUrl, '_blank')
+  } else {
+    // 降级方案：使用路由解析
+    const detailUrl = router.resolve({ name: 'PageDetail', params: { id: pageId } }).href
+    window.open(detailUrl, '_blank')
+  }
 }
 
 // 编辑服装

@@ -1,23 +1,10 @@
 import { onMounted, onUnmounted, watch, computed, unref } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { debounce } from 'lodash-es'
 
 // 注册 ScrollTrigger 插件
 gsap.registerPlugin(ScrollTrigger)
-
-/**
- * 防抖函数
- * @param {Function} func - 要防抖的函数
- * @param {Number} wait - 等待时间（毫秒）
- * @returns {Function} 防抖后的函数
- */
-function debounce(func, wait = 150) {
-  let timeout = null
-  return function (...args) {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => func.apply(this, args), wait)
-  }
-}
 
 /**
  * 滚动动画 Hook
