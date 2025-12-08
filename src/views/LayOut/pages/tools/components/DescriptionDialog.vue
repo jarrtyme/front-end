@@ -16,7 +16,7 @@
         <el-input
           v-model="desc.text"
           type="textarea"
-          :rows="2"
+          :autosize="{ minRows: 2, maxRows: 6 }"
           placeholder="请输入描述内容"
           maxlength="500"
           show-word-limit
@@ -45,7 +45,7 @@
         <el-input
           v-model="desc.text"
           type="textarea"
-          :rows="2"
+          :autosize="{ minRows: 2, maxRows: 6 }"
           placeholder="请输入描述内容"
           maxlength="500"
           show-word-limit

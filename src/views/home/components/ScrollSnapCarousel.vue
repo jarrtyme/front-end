@@ -8,12 +8,14 @@
           :key="index"
           :ref="el => setItemRef(el, index)"
           class="scroll-snap-item"
-          :class="{ clickable: isClickable(item) }"
-          @click="handleItemClick(item)"
         >
           <slot name="item" :item="item" :index="index">
             <div class="default-item-content">
-              <div class="default-item">
+              <div
+                class="default-item"
+                :class="{ clickable: isClickable(item) }"
+                @click="handleItemClick(item)"
+              >
                 <img
                   v-if="isImage(item)"
                   :src="item.url"
@@ -127,7 +129,7 @@ const props = defineProps({
 
 // 判断是否可点击
 const isClickable = item => {
-  return !!(item?.clothingId || item?.link || props.link)
+  return !!(item?.link || props.link)
 }
 
 // 处理点击事件
@@ -351,15 +353,6 @@ const scrollToNext = () => {
   &:last-child {
     padding-right: calc(var(--double-edge-border-width) + var(--gutter-width));
   }
-
-  &.clickable {
-    cursor: pointer;
-    transition: opacity 0.3s ease;
-
-    &:hover {
-      opacity: 0.95;
-    }
-  }
 }
 
 .default-item-content {
@@ -380,6 +373,16 @@ const scrollToNext = () => {
     border-radius: 24px;
     height: 80%;
     width: 100%;
+
+    &.clickable {
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+
+      &:hover {
+        opacity: 0.95;
+      }
+    }
+
     img {
       width: 100%;
       height: 100%;

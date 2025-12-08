@@ -207,7 +207,12 @@
                         </el-tag>
                       </div>
                     </div>
-                    <el-button type="primary" size="small" @click="openMediaSelector(itemIndex)">
+                    <el-button
+                      type="primary"
+                      size="small"
+                      width="200px"
+                      @click="openMediaSelector(itemIndex)"
+                    >
                       更换媒体
                     </el-button>
                   </div>
@@ -232,6 +237,8 @@
                     <el-input
                       v-model="item.descriptions[descIndex].text"
                       placeholder="请输入描述文本"
+                      type="textarea"
+                      :autosize="{ minRows: 2, maxRows: 6 }"
                       @blur="handleDescriptionBlur(itemIndex, descIndex)"
                     />
                     <el-button
@@ -251,6 +258,12 @@
                   >
                     添加描述
                   </el-button>
+                </div>
+
+                <!-- 链接地址 -->
+                <div class="link-section">
+                  <div class="section-label">链接地址</div>
+                  <el-input v-model="item.link" placeholder="请输入跳转链接（可选）" clearable />
                 </div>
               </div>
             </div>
@@ -530,7 +543,8 @@ const handleEdit = async row => {
           descriptions: (item.descriptions || []).map(desc => ({
             text: typeof desc === 'string' ? desc : desc.text || '',
             createdAt: desc.createdAt || new Date()
-          }))
+          })),
+          link: item.link || ''
         })),
         order: data.order || 0,
         isActive: data.isActive !== false,
@@ -632,7 +646,8 @@ const confirmEdit = async () => {
         descriptions: (item.descriptions || []).map(desc => ({
           text: typeof desc === 'string' ? desc : desc.text || '',
           createdAt: desc.createdAt || new Date()
-        }))
+        })),
+        link: item.link ? item.link.trim() : ''
       })),
       order: editForm.value.order || 0,
       isActive: editForm.value.isActive
@@ -693,7 +708,8 @@ const addItem = () => {
       type: FILE_TYPES.IMAGE, // 默认类型
       filename: ''
     },
-    descriptions: []
+    descriptions: [],
+    link: ''
   })
 }
 
@@ -908,10 +924,12 @@ const handlePageChange = val => {
     gap: 20px;
     flex-wrap: wrap;
     flex-direction: row;
+    flex-direction: column;
   }
 
   .media-section,
-  .descriptions-section {
+  .descriptions-section,
+  .link-section {
     flex: 1;
   }
 

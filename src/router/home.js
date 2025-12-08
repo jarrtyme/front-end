@@ -24,12 +24,12 @@ const homeRoutes = [
     }
   },
   {
-    path: '/clothing/:id',
-    name: 'ClothingDetail',
+    path: '/pageid/:id',
+    name: 'PageDetail',
     component: () => import('@/views/Home/Home.vue'),
     meta: {
       keepAlive: false,
-      title: '服装详情',
+      title: '木木的ootd',
       requiresAuth: false // 公开页面，不需要登录
     }
   }

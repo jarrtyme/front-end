@@ -805,13 +805,37 @@ const handleCreate = () => {
 }
 
 // 查看详情（跳转到详情页）
-const handleViewDetail = row => {
+const handleViewDetail = async row => {
   if (!row._id) {
     ElMessage.error('服装ID不存在')
     return
   }
-  // 在新标签页打开详情页
-  const detailUrl = router.resolve({ name: 'ClothingDetail', params: { id: row._id } }).href
+
+  // 获取服装绑定的页面ID
+  let pageId = null
+  if (row.pageId) {
+    // 如果已经有 pageId，直接使用
+    pageId = typeof row.pageId === 'object' ? row.pageId._id || row.pageId : row.pageId
+  } else {
+    // 如果没有 pageId，尝试获取
+    try {
+      const response = await getBoundPage(row._id)
+      if (response && response.code === 200 && response.data) {
+        pageId =
+          typeof response.data === 'object' ? response.data._id || response.data : response.data
+      }
+    } catch (error) {
+      console.error('获取绑定页面失败:', error)
+    }
+  }
+
+  if (!pageId) {
+    ElMessage.warning('该服装未绑定页面，无法查看详情')
+    return
+  }
+
+  // 在新标签页打开页面详情
+  const detailUrl = router.resolve({ name: 'PageDetail', params: { id: pageId } }).href
   window.open(detailUrl, '_blank')
 }
 

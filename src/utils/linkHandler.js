@@ -40,7 +40,7 @@ export function handleLinkClick(link, router) {
 
 /**
  * 处理 item 点击
- * 优先使用 clothingId，否则使用 link
+ * 优先使用内部链接，否则使用外部链接
  * @param {Object} item - 数据项对象
  * @param {string} link - 组件级别的链接（可选）
  * @param {Object} router - Vue Router 实例
@@ -49,22 +49,27 @@ export function handleItemClick(item, link, router) {
   if (!item) return
   console.log(item, link)
 
-  // 优先使用 clothingId
-  if (item.clothingId) {
-    router.push({ name: 'ClothingDetail', params: { id: item.clothingId } })
+  const itemLink =
+    item.link && typeof item.link === 'string' && item.link.trim() ? item.link.trim() : ''
+  const componentLink = link && typeof link === 'string' && link.trim() ? link.trim() : ''
+
+  // 收集所有可用的链接
+  const links = []
+  if (itemLink) links.push({ link: itemLink, isExternal: isExternalLink(itemLink) })
+  if (componentLink) links.push({ link: componentLink, isExternal: isExternalLink(componentLink) })
+
+  if (links.length === 0) return
+
+  // 优先选择内部链接（非外部链接）
+  const internalLink = links.find(l => !l.isExternal)
+  if (internalLink) {
+    handleLinkClick(internalLink.link, router)
     return
   }
 
-  // 其次使用 item 自身的 link（可能来自 item.link 或组件级别的 link）
-  // 检查 link 是否为非空字符串
-  if (item.link && typeof item.link === 'string' && item.link.trim()) {
-    handleLinkClick(item.link, router)
-    return
-  }
-
-  // 最后使用组件级别的 link（作为后备）
-  // 检查 link 是否为非空字符串
-  if (link && typeof link === 'string' && link.trim()) {
-    handleLinkClick(link, router)
+  // 如果没有内部链接，使用外部链接
+  const externalLink = links.find(l => l.isExternal)
+  if (externalLink) {
+    handleLinkClick(externalLink.link, router)
   }
 }

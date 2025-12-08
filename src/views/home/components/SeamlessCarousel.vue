@@ -22,15 +22,14 @@
         :style="copyIndex > 0 ? cloneStyle : {}"
       >
         <slot>
-          <div
-            v-for="(item, index) in items"
-            :key="`${copyIndex}-${index}`"
-            class="carousel-item"
-            :class="{ clickable: isClickable(item) }"
-            @click="handleItemClick(item)"
-          >
+          <div v-for="(item, index) in items" :key="`${copyIndex}-${index}`" class="carousel-item">
             <slot name="item" :item="item" :index="index">
-              <div v-if="item.url" class="default-item">
+              <div
+                v-if="item.url"
+                class="default-item"
+                :class="{ clickable: isClickable(item) }"
+                @click="handleItemClick(item)"
+              >
                 <img
                   v-if="isImage(item)"
                   :src="item.url"
@@ -107,7 +106,7 @@ const props = defineProps({
 
 // 判断是否可点击
 const isClickable = item => {
-  return !!(item?.clothingId || item?.link || props.link)
+  return !!(item?.link || props.link)
 }
 
 // 处理点击事件
@@ -414,6 +413,13 @@ defineExpose({
 
 .carousel-item {
   flex-shrink: 0;
+}
+
+.default-item {
+  width: 200px;
+  height: 150px;
+  overflow: hidden;
+  position: relative;
 
   &.clickable {
     cursor: pointer;
@@ -423,13 +429,6 @@ defineExpose({
       opacity: 0.9;
     }
   }
-}
-
-.default-item {
-  width: 200px;
-  height: 150px;
-  overflow: hidden;
-  position: relative;
 
   img {
     width: 100%;

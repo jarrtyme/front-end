@@ -27,12 +27,20 @@ const router = useRouter()
 const route = useRoute()
 
 const isHomePage = computed(() => {
-  console.log(route.name);
-  return route.name === 'Home'
+  // 根目录（/）或 /pageid/home 都视为首页
+  return route.name === 'Home' || (route.name === 'PageDetail' && route.params.id === 'home')
 })
 
 const goBack = () => {
-  router.back()
+  // 检查是否有历史记录可以返回
+  // window.history.length <= 1 表示只有当前页面，没有历史记录
+  if (window.history.length <= 1) {
+    // 没有历史记录，跳转到首页
+    router.push({ name: 'Home' })
+  } else {
+    // 有历史记录，返回上一页
+    router.back()
+  }
 }
 
 const props = defineProps({

@@ -95,7 +95,7 @@ const router = useRouter()
 
 // 判断是否可点击
 const isClickable = item => {
-  return !!(item?.clothingId || item?.link || props.link)
+  return !!(item?.link || props.link)
 }
 
 // 处理点击事件

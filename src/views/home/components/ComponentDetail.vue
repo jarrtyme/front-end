@@ -4,10 +4,13 @@
       v-for="(item, index) in items"
       :key="item.id || item.media?.url || item.url || index"
       class="detail-card"
-      :class="{ clickable: isClickable(item) }"
-      @click="handleItemClick(item)"
     >
-      <div v-if="hasMedia(item)" class="media-wrapper">
+      <div
+        v-if="hasMedia(item)"
+        class="media-wrapper"
+        :class="{ clickable: isClickable(item) }"
+        @click="handleItemClick(item)"
+      >
         <MediaItem
           :item="formatMediaItem(item)"
           :alt-text="`detail-media-${index + 1}`"
@@ -19,17 +22,29 @@
       </div>
       <div class="detail-content">
         <slot name="header" :item="item" :index="index">
-          <p v-if="getPrimaryText(item)" class="primary-text">
+          <h3 v-if="getPrimaryText(item)" class="primary-text">
             {{ getPrimaryText(item) }}
-          </p>
+          </h3>
         </slot>
         <slot name="descriptions" :item="item" :index="index">
-          <ul v-if="getDescriptionList(item).length" class="desc-list">
-            <li v-for="(desc, descIndex) in getDescriptionList(item)" :key="descIndex">
+          <template v-if="getDescriptionList(item).length">
+            <p
+              v-for="(desc, descIndex) in getDescriptionList(item)"
+              :key="descIndex"
+              class="desc-text"
+            >
               {{ desc }}
-            </li>
-          </ul>
+            </p>
+          </template>
         </slot>
+        <el-button
+          v-if="isClickable(item)"
+          type="primary"
+          class="view-button"
+          @click.stop="handleItemClick(item)"
+        >
+          查看
+        </el-button>
         <slot name="extra" :item="item" :index="index" />
       </div>
     </article>
@@ -61,7 +76,7 @@ const router = useRouter()
 
 // 判断是否可点击
 const isClickable = item => {
-  return !!(item?.clothingId || item?.link || props.link)
+  return !!(item?.link || props.link)
 }
 
 // 处理点击事件
@@ -129,6 +144,14 @@ const linkText = computed(() => props.linkText || '')
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(4px);
   flex-wrap: wrap;
+}
+
+.media-wrapper {
+  flex: 1 1 320px;
+  min-width: 280px;
+  max-width: 480px;
+  border-radius: 12px;
+  overflow: hidden;
 
   &.clickable {
     cursor: pointer;
@@ -141,37 +164,29 @@ const linkText = computed(() => props.linkText || '')
   }
 }
 
-.media-wrapper {
-  flex: 1 1 320px;
-  min-width: 280px;
-  max-width: 480px;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
 .detail-content {
   flex: 1 1 300px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 12px;
-  color: #f5f5f5;
 }
 
 .primary-text {
   font-size: 20px;
   font-weight: 600;
   line-height: 1.5;
-  margin: 0;
+  margin: 0 0 12px 0;
 }
 
-.desc-list {
-  padding-left: 20px;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  color: #dcdcdc;
+.desc-text {
+  margin: 0 0 6px 0;
+  line-height: 1.6;
+}
+
+.view-button {
+  margin-top: 12px;
+  align-self: flex-start;
 }
 
 .detail-link {

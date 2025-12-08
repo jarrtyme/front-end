@@ -46,7 +46,6 @@ import Header from '@/views/Home/components/Header.vue'
 import Footer from '@/views/Home/components/Footer.vue'
 import DynamicComponentRenderer from '@/views/Home/components/DynamicComponentRenderer.vue'
 import { getPublicPageById } from '@/api/page'
-import { getClothingPublicDetail } from '@/api/clothing'
 import { DEFAULT_DISPLAY_TYPE } from '@/config/displayType'
 import { usePageComponents, getComponentItemsData } from '@/composables/usePageComponents'
 
@@ -56,9 +55,9 @@ const DEFAULT_PAGE_ID = 'home'
 const route = useRoute()
 const router = useRouter()
 
-// 判断是否为服装详情模式
-const isClothingDetailMode = computed(() => {
-  return !!route.params.id
+// 判断是否为页面详情模式（/pageid/:id）
+const isPageDetailMode = computed(() => {
+  return route.name === 'PageDetail' && !!route.params.id
 })
 
 // 存储组件列表
@@ -69,9 +68,16 @@ const error = ref('')
 // 使用 composable 获取组件过滤器和工具函数
 const { headerComponents, footerComponents, contentComponents } = usePageComponents(componentsList)
 
-// 首页模式的页面 ID
+// 获取当前页面 ID
+// 根目录（/）默认使用 'home'
+// /pageid/:id 使用路由参数中的 id
 const currentPageId = computed(() => {
-  return (route.query?.id || '').toString().trim() || DEFAULT_PAGE_ID
+  if (isPageDetailMode.value) {
+    // 页面详情模式，使用路由参数中的 id
+    return route.params.id?.toString().trim() || ''
+  }
+  // 根目录，默认使用 'home'
+  return DEFAULT_PAGE_ID
 })
 
 // 加载页面组件数据
@@ -113,51 +119,16 @@ const loadPageComponents = async pageId => {
   }
 }
 
-// 加载服装详情并获取页面ID
-const loadClothingPageId = async () => {
-  const id = route.params.id
-  if (!id) {
-    error.value = '缺少服装ID'
-    return
-  }
-
-  loading.value = true
-  error.value = ''
-  try {
-    const response = await getClothingPublicDetail(id)
-    if (response && response.code === 200 && response.data) {
-      // 如果绑定了页面，加载页面组件
-      if (response.data.pageId) {
-        const pageId =
-          typeof response.data.pageId === 'object'
-            ? response.data.pageId._id || response.data.pageId
-            : response.data.pageId
-        if (pageId) {
-          await loadPageComponents(pageId)
-        } else {
-          error.value = '服装未绑定页面'
-        }
-      } else {
-        error.value = '服装未绑定页面'
-      }
-    } else {
-      error.value = response?.message || '获取服装详情失败'
-    }
-  } catch (err) {
-    console.error('加载服装详情失败:', err)
-    error.value = err?.message || '加载服装详情失败'
-    ElMessage.error('加载服装详情失败')
-  } finally {
-    loading.value = false
-  }
-}
-
 // 统一的数据加载函数
 const loadData = () => {
-  if (isClothingDetailMode.value) {
-    loadClothingPageId()
-  } else {
-    loadPageComponents(currentPageId.value)
+  // 页面详情模式或根目录，加载页面组件
+  if (isPageDetailMode.value || route.name === 'Home') {
+    const pageId = currentPageId.value
+    if (pageId) {
+      loadPageComponents(pageId)
+    } else {
+      error.value = '缺少页面ID'
+    }
   }
 }
 
@@ -168,36 +139,21 @@ const goBack = () => {
 
 // 监听路由变化
 watch(
-  () => route.params.id,
+  () => [route.name, route.params.id],
   () => {
-    if (isClothingDetailMode.value) {
-      loadClothingPageId()
+    if (isPageDetailMode.value || route.name === 'Home') {
+      const pageId = currentPageId.value
+      if (pageId) {
+        loadPageComponents(pageId)
+      }
     }
-  }
+  },
+  { immediate: false }
 )
-
-// 监听 currentPageId 变化（排除初始化时的调用，避免重复）
-watch(currentPageId, newId => {
-  if (!isClothingDetailMode.value) {
-    loadPageComponents(newId)
-  }
-})
 
 // 初始化
 onMounted(() => {
-  if (isClothingDetailMode.value) {
-    loadClothingPageId()
-  } else {
-    // 如果访问时没有 id 且存在默认值，保持 URL 一致
-    if (!route.query.id && DEFAULT_PAGE_ID) {
-      router.replace({ query: { ...route.query, id: DEFAULT_PAGE_ID } })
-      // router.replace 会触发 currentPageId 变化，watch 会自动调用 loadPageComponents
-      // 所以这里不需要手动调用
-    } else {
-      // 如果已经有 id，直接加载
-      loadPageComponents(currentPageId.value)
-    }
-  }
+  loadData()
 })
 </script>
 

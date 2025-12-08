@@ -33,11 +33,10 @@ export function getComponentItemsData(component) {
       : ''
 
   const items = component.items.map(item => {
-    // item 级别的 link，如果没有则使用组件级别的 link
+    // 保持 item.link 的原始值，不在这里做 fallback
+    // 跳转优先级逻辑由 linkHandler.js 的 handleItemClick 函数处理
     const itemLink =
-      item?.link && typeof item.link === 'string' && item.link.trim()
-        ? item.link.trim()
-        : componentLink
+      item?.link && typeof item.link === 'string' && item.link.trim() ? item.link.trim() : ''
 
     return {
       url: item?.media?.url || '',
@@ -52,8 +51,7 @@ export function getComponentItemsData(component) {
         : [],
       type: item?.media?.type || 'image', // 使用后端返回的 type
       fileType: item?.media?.type || 'image',
-      clothingId: item?.clothingId || null, // 关联的服装ID
-      // 如果 item 有 link 字段且非空，使用 item 的 link，否则使用组件级别的 link
+      // item 级别的 link（保持原始值，跳转时由 linkHandler 处理优先级）
       link: itemLink,
       media: {
         url: item?.media?.url || '',
