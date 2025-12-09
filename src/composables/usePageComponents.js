@@ -158,6 +158,42 @@ export function getScrollSnapWidthMode(component) {
 }
 
 /**
+ * 获取 Markdown 文件源地址（优先查找 .md/.markdown 文件，.md 文件归类为 text 类型）
+ * @param {Object} component - 组件对象
+ * @returns {string} Markdown 文件源地址
+ */
+export function getMarkdownSrc(component) {
+  if (!component || !component.items || !Array.isArray(component.items)) return ''
+  // Markdown 文件现在归类为 text 类型，优先查找 .md 或 .markdown 文件
+  const markdownItem = component.items.find(item => {
+    if (item?.media?.type !== 'text') return false
+    const filename = item?.media?.filename || ''
+    return filename.toLowerCase().endsWith('.md') || filename.toLowerCase().endsWith('.markdown')
+  })
+  // 如果没找到 .md 文件，则查找任何 text 类型的文件
+  const textItem = markdownItem || component.items.find(item => item?.media?.type === 'text')
+  return textItem?.media?.url || component.items[0]?.media?.url || ''
+}
+
+/**
+ * 获取 Markdown 高度
+ * @param {Object} component - 组件对象
+ * @returns {string} Markdown 高度
+ */
+export function getMarkdownHeight(component) {
+  return component?.config?.height || component?.height || 'auto'
+}
+
+/**
+ * 获取 Markdown 最大高度
+ * @param {Object} component - 组件对象
+ * @returns {string} Markdown 最大高度
+ */
+export function getMarkdownMaxHeight(component) {
+  return component?.config?.maxHeight || component?.maxHeight || 'none'
+}
+
+/**
  * 组件过滤器 Composable
  * 根据 componentsList 返回排序和过滤后的组件
  * @param {import('vue').Ref<Array>} componentsList - 组件列表的响应式引用
@@ -226,6 +262,9 @@ export function usePageComponents(componentsList) {
     getVideoAutoplay,
     getScrollSnapHeight,
     getScrollSnapWidthMode,
+    getMarkdownSrc,
+    getMarkdownHeight,
+    getMarkdownMaxHeight,
     // 计算属性
     ...filters
   }

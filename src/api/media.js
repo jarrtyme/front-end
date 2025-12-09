@@ -98,6 +98,16 @@ export function updateDescription(id, descriptionId, text) {
 }
 
 /**
+ * 统一保存描述（一次性处理添加、更新、删除）
+ * @param {string} id - 媒体ID
+ * @param {Array} descriptions - 描述数组，每个元素包含 { _id?: '描述ID', text: '描述文本' }
+ * @returns {Promise}
+ */
+export function saveDescriptions(id, descriptions) {
+  return post('/media/saveDescriptions', { id, descriptions })
+}
+
+/**
  * 批量添加描述
  * @param {Array} items - 批量操作项数组，每个元素包含 { id: '媒体ID', texts: ['描述1', '描述2'] }
  * @returns {Promise}

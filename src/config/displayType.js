@@ -12,6 +12,7 @@ export const DISPLAY_TYPES = {
   SEAMLESS: 'seamless',
   VIDEO: 'video',
   DETAIL: 'detail',
+  MARKDOWN: 'markdown',
   HEADER: 'header',
   FOOTER: 'footer'
 }
@@ -52,6 +53,11 @@ export const DISPLAY_TYPE_CONFIG = {
     label: '详情',
     tagType: 'info',
     component: 'ComponentDetail'
+  },
+  [DISPLAY_TYPES.MARKDOWN]: {
+    label: 'Markdown',
+    tagType: 'warning',
+    component: 'MarkdownPreview'
   },
   [DISPLAY_TYPES.HEADER]: {
     label: '头部',

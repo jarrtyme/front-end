@@ -60,6 +60,14 @@
       :loop="getVideoLoop(component)"
       :autoplay="getVideoAutoplay(component)"
     />
+
+    <!-- markdown: Markdown 预览 -->
+    <MarkdownPreview
+      v-else-if="component.displayType === DISPLAY_TYPES.MARKDOWN && component.isActive"
+      :src="getMarkdownSrc(component)"
+      :height="getMarkdownHeight(component)"
+      :maxHeight="getMarkdownMaxHeight(component)"
+    />
   </template>
 </template>
 
@@ -71,6 +79,7 @@ import Desccard from '@/views/Home/components/Desccard.vue'
 import Bigner from '@/views/Home/components/Bigner.vue'
 import VideoPlayer from '@/components/VideoPlayer.vue'
 import ComponentDetail from '@/views/Home/components/ComponentDetail.vue'
+import MarkdownPreview from '@/components/MarkdownPreview.vue'
 import { DISPLAY_TYPES } from '@/config/displayType'
 import {
   getComponentItemsData,
@@ -82,7 +91,10 @@ import {
   getVideoLoop,
   getVideoAutoplay,
   getScrollSnapHeight,
-  getScrollSnapWidthMode
+  getScrollSnapWidthMode,
+  getMarkdownSrc,
+  getMarkdownHeight,
+  getMarkdownMaxHeight
 } from '@/composables/usePageComponents'
 
 defineProps({

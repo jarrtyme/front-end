@@ -56,21 +56,14 @@ const props = defineProps({
 
 const emit = defineEmits(['batch-delete', 'batch-add-to-library', 'open-batch-description-dialog'])
 
-// 判断是否为图片或视频
-const isImageOrVideo = file => {
-  return file.fileType === 'image' || file.fileType === 'video'
-}
-
-// 计算选中的未添加到媒体库的文件（图片或视频）
+// 计算选中的未添加到媒体库的文件（所有文件类型）
 const selectedFilesNotInLibrary = computed(() => {
-  return props.selectedFiles.filter(file => isImageOrVideo(file) && !file.isAddedToLibrary)
+  return props.selectedFiles.filter(file => !file.isAddedToLibrary)
 })
 
-// 计算选中的已添加到媒体库的文件（图片或视频）
+// 计算选中的已添加到媒体库的文件（所有文件类型）
 const selectedFilesInLibrary = computed(() => {
-  return props.selectedFiles.filter(
-    file => isImageOrVideo(file) && file.isAddedToLibrary && file.mediaId
-  )
+  return props.selectedFiles.filter(file => file.isAddedToLibrary && file.mediaId)
 })
 
 // 是否可以批量添加到媒体库

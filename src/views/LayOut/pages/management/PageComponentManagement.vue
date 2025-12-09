@@ -177,8 +177,9 @@
                 <div class="media-section">
                   <div class="section-label">媒体</div>
                   <div v-if="item.media?.url" class="media-preview">
+                    <!-- 图片预览 -->
                     <el-image
-                      v-if="item.media.type === 'image'"
+                      v-if="item.media.type === FILE_TYPES.IMAGE"
                       :src="getMediaUrl(item.media.url)"
                       fit="cover"
                       style="width: 150px; height: 150px; border-radius: 4px"
@@ -190,20 +191,50 @@
                         </div>
                       </template>
                     </el-image>
+                    <!-- 视频预览 -->
                     <video
                       v-else-if="item.media.type === FILE_TYPES.VIDEO"
                       :src="getMediaUrl(item.media.url)"
                       controls
                       style="width: 150px; height: 150px; border-radius: 4px"
                     />
+                    <!-- 其他类型预览 -->
+                    <div
+                      v-else
+                      class="media-placeholder"
+                      style="
+                        width: 150px;
+                        height: 150px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: rgba(255, 255, 255, 0.05);
+                        border-radius: 4px;
+                      "
+                    >
+                      <div style="text-align: center">
+                        <el-icon style="font-size: 32px; color: var(--el-text-color-secondary)">
+                          <Document v-if="item.media.type === FILE_TYPES.DOCUMENT" />
+                          <Folder v-else-if="item.media.type === FILE_TYPES.ARCHIVE" />
+                          <Document v-else-if="item.media.type === FILE_TYPES.TEXT" />
+                          <QuestionFilled v-else />
+                        </el-icon>
+                        <div
+                          style="
+                            margin-top: 8px;
+                            font-size: 12px;
+                            color: var(--el-text-color-secondary);
+                          "
+                        >
+                          {{ FILE_TYPE_LABELS[item.media.type] || '未知类型' }}
+                        </div>
+                      </div>
+                    </div>
                     <div class="media-info">
                       <div>{{ item.media.filename || '未命名' }}</div>
                       <div class="media-type-tag">
-                        <el-tag
-                          :type="item.media.type === 'image' ? 'success' : 'primary'"
-                          size="small"
-                        >
-                          {{ item.media.type === 'image' ? '图片' : '视频' }}
+                        <el-tag :type="FILE_TYPE_TAG_TYPES[item.media.type] || ''" size="small">
+                          {{ FILE_TYPE_LABELS[item.media.type] || item.media.type || '未知' }}
                         </el-tag>
                       </div>
                     </div>
@@ -309,8 +340,12 @@
             style="width: 150px; margin-left: 10px"
             @change="loadMediaList"
           >
-            <el-option label="图片" value="image" />
-            <el-option label="视频" value="video" />
+            <el-option
+              v-for="(label, type) in FILE_TYPE_LABELS"
+              :key="type"
+              :label="label"
+              :value="type"
+            />
           </el-select>
         </div>
         <div class="media-list" v-loading="mediaLoading">
@@ -321,8 +356,9 @@
             :class="{ selected: selectedMedia?._id === media._id }"
             @click="selectMedia(media)"
           >
+            <!-- 图片预览 -->
             <el-image
-              v-if="media.type === 'image'"
+              v-if="media.type === FILE_TYPES.IMAGE"
               :src="getMediaUrl(media.url)"
               fit="cover"
               style="width: 100%; height: 150px"
@@ -333,15 +369,44 @@
                 </div>
               </template>
             </el-image>
+            <!-- 视频预览 -->
             <video
-              v-else
+              v-else-if="media.type === FILE_TYPES.VIDEO"
               :src="getMediaUrl(media.url)"
               style="width: 100%; height: 150px; object-fit: cover"
             />
+            <!-- 其他类型预览 -->
+            <div
+              v-else
+              class="media-placeholder"
+              style="
+                width: 100%;
+                height: 150px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 4px;
+              "
+            >
+              <div style="text-align: center">
+                <el-icon style="font-size: 32px; color: var(--el-text-color-secondary)">
+                  <Document v-if="media.type === FILE_TYPES.DOCUMENT" />
+                  <Folder v-else-if="media.type === FILE_TYPES.ARCHIVE" />
+                  <Document v-else-if="media.type === FILE_TYPES.TEXT" />
+                  <QuestionFilled v-else />
+                </el-icon>
+                <div
+                  style="margin-top: 8px; font-size: 12px; color: var(--el-text-color-secondary)"
+                >
+                  {{ FILE_TYPE_LABELS[media.type] || '未知类型' }}
+                </div>
+              </div>
+            </div>
             <div class="media-item-info">
               <div class="media-item-name">{{ media.filename || '未命名' }}</div>
-              <el-tag :type="media.type === 'image' ? 'success' : 'primary'" size="small">
-                {{ media.type === 'image' ? '图片' : '视频' }}
+              <el-tag :type="FILE_TYPE_TAG_TYPES[media.type] || ''" size="small">
+                {{ FILE_TYPE_LABELS[media.type] || media.type || '未知' }}
               </el-tag>
             </div>
           </div>
@@ -376,7 +441,16 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Delete, Search, Refresh, Picture } from '@element-plus/icons-vue'
+import {
+  Plus,
+  Delete,
+  Search,
+  Refresh,
+  Picture,
+  Document,
+  Folder,
+  QuestionFilled
+} from '@element-plus/icons-vue'
 import {
   getPageComponentList,
   createPageComponent,
@@ -394,7 +468,7 @@ import {
   DISPLAY_TYPES
 } from '@/config/displayType'
 import { DEFAULT_PAGE, getDefaultPageSize, getPageSizeOptions } from '@/config/pagination'
-import { FILE_TYPES } from '@/config/fileType'
+import { FILE_TYPES, FILE_TYPE_LABELS, FILE_TYPE_TAG_TYPES } from '@/config/fileType'
 import { debounce } from 'lodash-es'
 
 defineOptions({
@@ -615,11 +689,17 @@ const confirmEdit = async () => {
           ElMessage.warning(`组件项 ${i + 1} 缺少媒体类型`)
           return
         }
-        // 确保 media.type 是有效的值
-        if (![FILE_TYPES.IMAGE, FILE_TYPES.VIDEO].includes(item.media.type)) {
-          ElMessage.warning(
-            `组件项 ${i + 1} 的媒体类型无效，必须是 ${FILE_TYPES.IMAGE} 或 ${FILE_TYPES.VIDEO}`
-          )
+        // 确保 media.type 是有效的值（支持所有文件类型）
+        const validTypes = [
+          FILE_TYPES.IMAGE,
+          FILE_TYPES.VIDEO,
+          FILE_TYPES.DOCUMENT,
+          FILE_TYPES.ARCHIVE,
+          FILE_TYPES.TEXT,
+          FILE_TYPES.OTHER
+        ]
+        if (!validTypes.includes(item.media.type)) {
+          ElMessage.warning(`组件项 ${i + 1} 的媒体类型无效: ${item.media.type}`)
           return
         }
       }

@@ -50,8 +50,8 @@ export const DOCUMENT_EXTENSIONS = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.
 // 压缩包扩展名列表
 export const ARCHIVE_EXTENSIONS = ['.zip', '.rar', '.7z', '.tar', '.gz']
 
-// 文本文件扩展名列表
-export const TEXT_EXTENSIONS = ['.txt', '.csv', '.json', '.xml', '.md']
+// 文本文件扩展名列表（包含 .md）
+export const TEXT_EXTENSIONS = ['.txt', '.csv', '.json', '.xml', '.md', '.markdown']
 
 // 所有扩展名映射
 export const EXTENSIONS_MAP = {
@@ -134,7 +134,7 @@ export const FILE_TYPE_RULES = {
     ),
     accept: '',
     getDefaultTip: (maxSize, maxCount) =>
-      `支持多种文件类型：图片、视频、文档、压缩包、文本文件，文件大小不超过 ${maxSize}MB，最多${maxCount}个`
+      `支持多种文件类型：图片、视频、文档、压缩包、文本文件（包含 Markdown），文件大小不超过 ${maxSize}MB，最多${maxCount}个`
   }
 }
 

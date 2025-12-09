@@ -54,7 +54,7 @@
       </el-table-column>
       <el-table-column label="描述" min-width="200">
         <template #default="{ row }">
-          <div v-if="isImageOrVideo(row)" class="descriptions-container">
+          <div class="descriptions-container">
             <el-tag
               v-for="(desc, index) in getMediaDescriptions(row)"
               :key="desc._id || index"
@@ -63,6 +63,7 @@
               {{ desc.text }}
             </el-tag>
             <el-button
+              v-if="row.isAddedToLibrary && row.mediaId"
               type="primary"
               link
               :icon="Plus"
@@ -71,8 +72,10 @@
             >
               {{ getMediaDescriptions(row).length > 0 ? '管理描述' : '添加描述' }}
             </el-button>
+            <span v-else-if="!row.isAddedToLibrary" style="color: #909399; font-size: 12px">
+              请先添加到媒体库
+            </span>
           </div>
-          <span v-else>-</span>
         </template>
       </el-table-column>
       <el-table-column prop="uploadTime" label="上传时间" width="180">
@@ -83,7 +86,7 @@
       <el-table-column label="操作" width="200" fixed="right">
         <template #default="{ row }">
           <el-button
-            v-if="isImageOrVideo(row) && !row.isAddedToLibrary"
+            v-if="!row.isAddedToLibrary"
             type="success"
             link
             size="small"
@@ -156,10 +159,6 @@ const isImage = filename => {
 
 const isVideo = filename => {
   return isVideoFile(filename)
-}
-
-const isImageOrVideo = row => {
-  return row.fileType === FILE_TYPES.IMAGE || row.fileType === FILE_TYPES.VIDEO
 }
 
 const getImageUrl = url => {

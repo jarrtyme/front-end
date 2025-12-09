@@ -105,6 +105,7 @@ import {
   addDescription,
   removeDescription,
   updateDescription,
+  saveDescriptions,
   batchAddDescription,
   batchCreateMedia
 } from '@/api/media'
@@ -296,21 +297,14 @@ const handleSelectionChange = selection => {
   selectedFiles.value = selection
 }
 
-// 判断是否为图片或视频
-const isImageOrVideo = file => {
-  return file.fileType === FILE_TYPES.IMAGE || file.fileType === FILE_TYPES.VIDEO
-}
-
-// 计算选中的未添加到媒体库的文件（图片或视频）
+// 计算选中的未添加到媒体库的文件（所有文件类型）
 const selectedFilesNotInLibrary = computed(() => {
-  return selectedFiles.value.filter(file => isImageOrVideo(file) && !file.isAddedToLibrary)
+  return selectedFiles.value.filter(file => !file.isAddedToLibrary)
 })
 
-// 计算选中的已添加到媒体库的文件（图片或视频）
+// 计算选中的已添加到媒体库的文件（所有文件类型）
 const selectedFilesInLibrary = computed(() => {
-  return selectedFiles.value.filter(
-    file => isImageOrVideo(file) && file.isAddedToLibrary && file.mediaId
-  )
+  return selectedFiles.value.filter(file => file.isAddedToLibrary && file.mediaId)
 })
 
 // 初始化加载
@@ -368,7 +362,8 @@ const getMediaDescriptions = row => {
 const handleAddToMediaLibrary = async row => {
   try {
     loading.value = true
-    const fileType = row.fileType === FILE_TYPES.IMAGE ? FILE_TYPES.IMAGE : FILE_TYPES.VIDEO
+    // 支持所有文件类型，使用文件的实际类型
+    const fileType = row.fileType || FILE_TYPES.OTHER
     // 优先使用 path（相对路径），确保与文件系统中的路径格式一致
     // path 格式如：/uploads/images/xxx.jpg，与后端存储格式一致
     const fileUrl = row.path || row.url
@@ -427,8 +422,9 @@ const handleOpenDescriptionDialog = row => {
   currentFile.value = row
   const descriptions = getMediaDescriptions(row)
   editingDescriptions.value = descriptions.map(desc => ({
-    _id: desc._id,
-    text: desc.text,
+    // 确保 _id 被正确转换为字符串（如果存在）
+    _id: desc._id ? (typeof desc._id === 'string' ? desc._id : String(desc._id)) : null,
+    text: desc.text || '',
     createdAt: desc.createdAt
   }))
   descriptionDialogVisible.value = true
@@ -449,90 +445,57 @@ const confirmSaveDescriptions = async descriptions => {
     return
   }
 
-  // 从事件参数获取描述数据，过滤空描述
-  const validDescriptions = descriptions.filter(desc => desc.text && desc.text.trim())
+  // 从事件参数获取描述数据，过滤空描述并统一处理 ID 格式
+  const validDescriptions = descriptions
+    .filter(desc => desc.text && desc.text.trim())
+    .map(desc => ({
+      // 确保 _id 被正确转换为字符串（如果存在）
+      _id: desc._id ? (typeof desc._id === 'string' ? desc._id : String(desc._id)) : null,
+      text: desc.text.trim()
+    }))
 
   descriptionLoading.value = true
   try {
+    // 检查是否有变化
     const originalDescriptions = getMediaDescriptions(currentFile.value) || []
-    // 统一处理 ID 类型转换：确保 _id 转换为字符串进行比较
     const originalDescMap = new Map(
       originalDescriptions.map(desc => {
-        const id = desc._id ? (typeof desc._id === 'string' ? desc._id : desc._id.toString()) : null
+        const id = desc._id ? (typeof desc._id === 'string' ? desc._id : String(desc._id)) : null
         return [id, desc]
       })
     )
 
-    const toAdd = []
-    const toUpdate = []
-    const toDelete = []
-
-    validDescriptions.forEach(desc => {
-      if (desc._id) {
-        // 统一处理 ID 类型转换
-        const descId = typeof desc._id === 'string' ? desc._id : desc._id.toString()
-        const original = originalDescMap.get(descId)
-        if (original && original.text !== desc.text.trim()) {
-          toUpdate.push({ id: desc._id, text: desc.text.trim() })
+    // 检查是否有变化
+    let hasChanges = false
+    if (validDescriptions.length !== originalDescriptions.length) {
+      hasChanges = true
+    } else {
+      for (const desc of validDescriptions) {
+        const id = desc._id || null
+        const original = id ? originalDescMap.get(id) : null
+        if (!original || original.text !== desc.text) {
+          hasChanges = true
+          break
         }
-        originalDescMap.delete(descId)
-      } else {
-        toAdd.push(desc.text.trim())
       }
-    })
+    }
 
-    // 剩余的原始描述需要删除
-    originalDescMap.forEach(desc => {
-      toDelete.push(desc._id)
-    })
-
-    // 如果没有需要执行的操作，直接返回
-    if (toAdd.length === 0 && toUpdate.length === 0 && toDelete.length === 0) {
+    if (!hasChanges) {
       ElMessage.info('描述未发生变化')
       handleDescriptionDialogClose()
       return
     }
 
-    // 使用 Promise.allSettled 处理部分失败的情况
-    const promises = []
-    toAdd.forEach(text => {
-      promises.push(addDescription(currentFile.value.mediaId, text))
-    })
-    toUpdate.forEach(({ id, text }) => {
-      promises.push(updateDescription(currentFile.value.mediaId, id, text))
-    })
-    toDelete.forEach(descId => {
-      promises.push(removeDescription(currentFile.value.mediaId, descId))
-    })
+    // 使用统一的保存接口，一次性处理所有变更
+    const response = await saveDescriptions(currentFile.value.mediaId, validDescriptions)
 
-    const results = await Promise.allSettled(promises)
-
-    // 检查结果，统计成功和失败的数量
-    const successCount = results.filter(r => r.status === 'fulfilled').length
-    const failCount = results.filter(r => r.status === 'rejected').length
-
-    if (failCount === 0) {
+    if (response.code === 200) {
       ElMessage.success('描述保存成功!')
-    } else if (successCount > 0) {
-      ElMessage.warning(`部分操作成功（${successCount} 个成功，${failCount} 个失败）`)
-      // 记录失败的详细信息
-      results.forEach((result, index) => {
-        if (result.status === 'rejected') {
-          logger.error(`描述操作失败 [${index}]:`, result.reason)
-        }
-      })
+      handleDescriptionDialogClose()
+      await loadFileList()
     } else {
-      // 所有操作都失败
-      const errorMessages = results
-        .filter(r => r.status === 'rejected')
-        .map(r => r.reason?.message || '未知错误')
-      logger.error('保存描述失败:', errorMessages)
-      ElMessage.error(`保存描述失败: ${errorMessages[0] || '未知错误'}`)
-      return // 如果全部失败，不关闭对话框，让用户重试
+      ElMessage.error(response.message || '保存描述失败')
     }
-
-    handleDescriptionDialogClose()
-    await loadFileList()
   } catch (error) {
     logger.error('保存描述失败:', error)
     ElMessage.error(error.message || '保存描述失败')
@@ -785,9 +748,9 @@ const handleBatchAddToLibrary = async () => {
   try {
     batchAddingToLibrary.value = true
 
-    // 构建批量创建的数据
+    // 构建批量创建的数据（支持所有文件类型）
     const items = filesToAdd.map(file => {
-      const fileType = file.fileType === FILE_TYPES.IMAGE ? FILE_TYPES.IMAGE : FILE_TYPES.VIDEO
+      const fileType = file.fileType || FILE_TYPES.OTHER
       const fileUrl = file.path || file.url
       return {
         type: fileType,
